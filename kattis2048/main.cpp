@@ -48,10 +48,13 @@ public:
                     }
                 }
 
-                if ((field[i][j - 1] == field[i][b]) || (field[i][j - 1] == 0))
+                if (field[i][b] != 0)
                 {
-                    field[i][j - 1] += field[i][b];
-                    field[i][b] = 0;
+                    if ((field[i][j - 1] == field[i][b]) || (field[i][j - 1] == 0))
+                    {
+                        field[i][j - 1] += field[i][b];
+                        field[i][b] = 0;
+                    }
                 }
             }
         }
@@ -61,9 +64,9 @@ public:
     {
         for (int i = 0; i < size; i++)
         {
-            for (int j = size - 1; j > 0; j--)
+            for (int j = size - 2; j > 0; j--)
             {
-                int b = j - 1;
+                int b = j;
 
                 while (field[i][b] == 0)
                 {
@@ -75,10 +78,73 @@ public:
                     }
                 }
 
-                if ((field[i][j + 1] == field[i][b]) || (field[i][j + 1] == 0))
+                if (field[i][b] != 0)
                 {
-                    field[i][j + 1] += field[i][b];
-                    field[i][b] = 0;
+                    if ((field[i][j + 1] == field[i][b]) || (field[i][j + 1] == 0))
+                    {
+                        field[i][j + 1] += field[i][b];
+                        field[i][b] = 0;
+                    }
+                }
+            }
+        }
+    }
+
+    void moveUp()
+    {
+        for (int c = 0; c < size; c++)
+        {
+            for (int i = 1; i < size; i++)
+            {
+                int b = i;
+
+                while (field[b][c] == 0)
+                {
+                    b++;
+                    if (b == size)
+                    {
+                        b--;
+                        break;
+                    }
+                }
+
+                if (field[b][c] != 0)
+                {
+                    if ((field[i - 1][c] == field[b][c]) || (field[i - 1][c] == 0))
+                    {
+                        field[i - 1][c] += field[b][c];
+                        field[b][c] = 0;
+                    }
+                }
+            }
+        }
+    }
+
+    void moveDown()
+    {
+        for (int c = 0; c < size; c++)
+        {
+            for (int i = size - 2; i > 0; i--)
+            {
+                int b = i;
+
+                while (field[b][c] == 0)
+                {
+                    b--;
+                    if (b < 0)
+                    {
+                        b++;
+                        break;
+                    }
+                }
+
+                if (field[b][c] != 0)
+                {
+                    if ((field[i + 1][c] == field[b][c]) || (field[i + 1][c] == 0))
+                    {
+                        field[i + 1][c] += field[b][c];
+                        field[b][c] = 0;
+                    }
                 }
             }
         }
@@ -89,18 +155,22 @@ public:
         if (step == 0)
         {
             moveLeft();
+            moveLeft();
         }
         else if (step == 1)
         {
-            // moveUp();
+            moveUp();
+            moveUp();
         }
         else if (step == 2)
         {
             moveRight();
+            moveRight();
         }
         else
         {
-            // moveDown();
+            moveDown();
+            moveDown();
         }
 
         print();
