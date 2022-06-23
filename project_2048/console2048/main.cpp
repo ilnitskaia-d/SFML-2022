@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
             }
         }
 
-        if(goal == 0)
+        if (goal == 0)
         {
             goal = 16;
         }
@@ -45,8 +45,4 @@ int main(int argc, char *argv[])
     }
 
     cout << goal << endl;
-    // for (int i = 0; i < argc; ++i)
-    // {
-    //     cout << argv[i] << endl;
-    // }
 }
