@@ -25,35 +25,26 @@ public:
         }
     }
 
-    bool canMove(int a, int b)
-    {
-        return (a == b && a != 0) || a == 0 || b == 0;
-    }
-
     void moveLeft()
     {
         for (int i = 0; i < size; i++)
         {
-            for (int j = 1; j < size; j++)
+            vector<bool> canMove(size, true);
+            for (int k = 0; k < size; k++)
             {
-                int b = j;
-
-                while (field[i][b] == 0)
+                for (int j = k; j > 0 && canMove[j - 1]; j--)
                 {
-                    b++;
-                    if (b == size)
+                    if (field[i][j] == field[i][j - 1] && field[i][j] != 0)
                     {
-                        b--;
+                        field[i][j - 1] *= 2;
+                        field[i][j] = 0;
+                        canMove[j - 1] = false;
                         break;
                     }
-                }
-
-                if (field[i][b] != 0)
-                {
-                    if ((field[i][j - 1] == field[i][b]) || (field[i][j - 1] == 0))
+                    else if (field[i][j - 1] == 0)
                     {
-                        field[i][j - 1] += field[i][b];
-                        field[i][b] = 0;
+                        field[i][j - 1] = field[i][j];
+                        field[i][j] = 0;
                     }
                 }
             }
@@ -64,26 +55,22 @@ public:
     {
         for (int i = 0; i < size; i++)
         {
-            for (int j = size - 2; j > 0; j--)
+            vector<bool> canMove(size, true);
+            for (int k = size - 1; k >= 0; k--)
             {
-                int b = j;
-
-                while (field[i][b] == 0)
+                for (int j = k; j < size - 1 && canMove[j + 1]; j++)
                 {
-                    b--;
-                    if (b < 0)
+                    if (field[i][j] == field[i][j + 1] && field[i][j] != 0)
                     {
-                        b++;
+                        field[i][j + 1] *= 2;
+                        field[i][j] = 0;
+                        canMove[j + 1] = false;
                         break;
                     }
-                }
-
-                if (field[i][b] != 0)
-                {
-                    if ((field[i][j + 1] == field[i][b]) || (field[i][j + 1] == 0))
+                    else if (field[i][j + 1] == 0)
                     {
-                        field[i][j + 1] += field[i][b];
-                        field[i][b] = 0;
+                        field[i][j + 1] = field[i][j];
+                        field[i][j] = 0;
                     }
                 }
             }
@@ -92,28 +79,24 @@ public:
 
     void moveUp()
     {
-        for (int c = 0; c < size; c++)
+        for (int i = 0; i < size; i++)
         {
-            for (int i = 1; i < size; i++)
+            vector<bool> canMove(size, true);
+            for (int k = size - 1; k > 0; k--)
             {
-                int b = i;
-
-                while (field[b][c] == 0)
+                for (int j = k; j < size - 1 && canMove[j - 1]; j++)
                 {
-                    b++;
-                    if (b == size)
+                    if (field[j][i] == field[j - 1][i] && field[j][i] != 0)
                     {
-                        b--;
+                        field[j - 1][i] *= 2;
+                        field[j][i] = 0;
+                        canMove[j - 1] = false;
                         break;
                     }
-                }
-
-                if (field[b][c] != 0)
-                {
-                    if ((field[i - 1][c] == field[b][c]) || (field[i - 1][c] == 0))
+                    else if (field[j - 1][i] == 0)
                     {
-                        field[i - 1][c] += field[b][c];
-                        field[b][c] = 0;
+                        field[j - 1][i] = field[j][i];
+                        field[j][i] = 0;
                     }
                 }
             }
@@ -154,7 +137,6 @@ public:
     {
         if (step == 0)
         {
-            moveLeft();
             moveLeft();
         }
         else if (step == 1)
