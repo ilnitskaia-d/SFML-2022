@@ -18,13 +18,6 @@ int main()
     float textY = window.getSize().y / 2 - text.getLocalBounds().height;
     text.setPosition(sf::Vector2f(textX, textY));
 
-    // sf::CircleShape shape;
-    // shape.setRadius(50);
-    // float shapeX = window.getSize().x / 2 - shape.getRadius();
-    // float shapeY = window.getSize().y / 2 - shape.getRadius();
-    // shape.setPosition(sf::Vector2f(shapeX, shapeY));
-    // shape.setFillColor(sf::Color::Red);
-
     sf::SoundBuffer soundBuffer;
     if (!soundBuffer.loadFromFile("data/Explosion.wav"))
     {
