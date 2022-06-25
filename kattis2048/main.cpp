@@ -79,24 +79,24 @@ public:
 
     void moveUp()
     {
-        for (int i = 0; i < size; i++)
+        for (int j = 0; j < size; j++)
         {
             vector<bool> canMove(size, true);
-            for (int k = size - 1; k > 0; k--)
+            for (int k = 0; k < size; k++)
             {
-                for (int j = k; j < size - 1 && canMove[j - 1]; j++)
+                for (int i = k; i > 0 && canMove[i - 1]; i--)
                 {
-                    if (field[j][i] == field[j - 1][i] && field[j][i] != 0)
+                    if (field[i][j] == field[i - 1][j] && field[i][j] != 0)
                     {
-                        field[j - 1][i] *= 2;
-                        field[j][i] = 0;
-                        canMove[j - 1] = false;
+                        field[i - 1][j] *= 2;
+                        field[i][j] = 0;
+                        canMove[i - 1] = false;
                         break;
                     }
-                    else if (field[j - 1][i] == 0)
+                    else if (field[i - 1][j] == 0)
                     {
-                        field[j - 1][i] = field[j][i];
-                        field[j][i] = 0;
+                        field[i - 1][j] = field[i][j];
+                        field[i][j] = 0;
                     }
                 }
             }
@@ -105,28 +105,24 @@ public:
 
     void moveDown()
     {
-        for (int c = 0; c < size; c++)
+        for (int j = 0; j < size; j++)
         {
-            for (int i = size - 2; i > 0; i--)
+            vector<bool> canMove(size, true);
+           for (int k = size - 1; k >= 0; k--)
             {
-                int b = i;
-
-                while (field[b][c] == 0)
+                for (int i = k; i < size - 1 && canMove[i + 1]; i++)
                 {
-                    b--;
-                    if (b < 0)
+                    if (field[i][j] == field[i + 1][j] && field[i][j] != 0)
                     {
-                        b++;
+                        field[i + 1][j] *= 2;
+                        field[i][j] = 0;
+                        canMove[i + 1] = false;
                         break;
                     }
-                }
-
-                if (field[b][c] != 0)
-                {
-                    if ((field[i + 1][c] == field[b][c]) || (field[i + 1][c] == 0))
+                    else if (field[i + 1][j] == 0)
                     {
-                        field[i + 1][c] += field[b][c];
-                        field[b][c] = 0;
+                        field[i + 1][j] = field[i][j];
+                        field[i][j] = 0;
                     }
                 }
             }
@@ -142,16 +138,13 @@ public:
         else if (step == 1)
         {
             moveUp();
-            moveUp();
         }
         else if (step == 2)
         {
             moveRight();
-            moveRight();
         }
         else
         {
-            moveDown();
             moveDown();
         }
 
