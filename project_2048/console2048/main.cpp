@@ -3,6 +3,8 @@
 #include <vector>
 #include <algorithm>
 #include <cstdlib>
+#include "game2048.hpp"
+#include "renderer.hpp"
 
 using namespace std;
 
@@ -45,4 +47,46 @@ int main(int argc, char *argv[])
     }
 
     cout << goal << endl;
+
+    Game2048 game;
+    Renderer renderer(game);
+    renderer.render();
+    cout << "cmd> ";
+
+    string cmd;
+    while (cin >> cmd)
+    {
+        if (cmd == "left")
+        {
+            game.moveLeft();
+        }
+        else if (cmd == "right")
+        {
+            game.moveRight();
+        }
+        else if (cmd == "up")
+        {
+            game.moveUp();
+        }
+        else if (cmd == "down")
+        {
+            game.moveDown();
+        }
+        else if (cmd == "exit")
+        {
+            break;
+        }
+        else
+        {
+            cout << "unknown command try : left, right, up, down, exit.\n";
+            continue;
+        }
+        renderer.render();
+        if(game.getWinStatus())
+        {
+            cout << "congrats!!!\n";
+            break;
+        }
+        cout << "cmd> ";
+    }
 }

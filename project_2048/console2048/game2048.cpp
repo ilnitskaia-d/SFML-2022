@@ -5,7 +5,7 @@ using namespace std;
 using Random = effolkronium::random_static;
 
 Game2048::Game2048(int goal)
-    : mPuzzle(4, vector<int>(4)), mGoal(goal), mCurrScore(0)
+    : mPuzzle(4, vector<int>(4)), mGoal(goal), mCurrScore(0), mWin(false)
 {
     addRandomNums();
     addRandomNums();
@@ -42,4 +42,133 @@ void Game2048::addRandomNums()
 int Game2048::getAt(int r, int c) const
 {
     return mPuzzle[r][c];
+}
+
+bool Game2048::getWinStatus()
+{
+    return mWin;
+}
+
+void Game2048::moveLeft()
+{
+    for (int i = 0; i < 4; i++)
+    {
+        vector<bool> canMove(4, true);
+        for (int k = 0; k < 4; k++)
+        {
+            for (int j = k; j > 0 && canMove[j - 1]; j--)
+            {
+                if (mPuzzle[i][j] == mPuzzle[i][j - 1] && mPuzzle[i][j] != 0)
+                {
+                    mPuzzle[i][j - 1] *= 2;
+                    if(mPuzzle[i][j - 1] == mGoal)
+                    {
+                        mWin = true;
+                    }
+                    mPuzzle[i][j] = 0;
+                    canMove[j - 1] = false;
+                    break;
+                }
+                else if (mPuzzle[i][j - 1] == 0)
+                {
+                    mPuzzle[i][j - 1] = mPuzzle[i][j];
+                    mPuzzle[i][j] = 0;
+                }
+            }
+        }
+    }
+    Game2048::addRandomNums();
+}
+
+void Game2048::moveRight()
+{
+    for (int i = 0; i < 4; i++)
+    {
+        vector<bool> canMove(4, true);
+        for (int k = 4 - 1; k >= 0; k--)
+        {
+            for (int j = k; j < 4 - 1 && canMove[j + 1]; j++)
+            {
+                if (mPuzzle[i][j] == mPuzzle[i][j + 1] && mPuzzle[i][j] != 0)
+                {
+                    mPuzzle[i][j + 1] *= 2;
+                    if(mPuzzle[i][j + 1] == mGoal)
+                    {
+                        mWin = true;
+                    }
+                    mPuzzle[i][j] = 0;
+                    canMove[j + 1] = false;
+                    break;
+                }
+                else if (mPuzzle[i][j + 1] == 0)
+                {
+                    mPuzzle[i][j + 1] = mPuzzle[i][j];
+                    mPuzzle[i][j] = 0;
+                }
+            }
+        }
+    }
+    Game2048::addRandomNums();
+}
+
+void Game2048::moveUp()
+{
+    for (int j = 0; j < 4; j++)
+    {
+        vector<bool> canMove(4, true);
+        for (int k = 0; k < 4; k++)
+        {
+            for (int i = k; i > 0 && canMove[i - 1]; i--)
+            {
+                if (mPuzzle[i][j] == mPuzzle[i - 1][j] && mPuzzle[i][j] != 0)
+                {
+                    mPuzzle[i - 1][j] *= 2;
+                    if(mPuzzle[i - 1][j] == mGoal)
+                    {
+                        mWin = true;
+                    }
+                    mPuzzle[i][j] = 0;
+                    canMove[i - 1] = false;
+                    break;
+                }
+                else if (mPuzzle[i - 1][j] == 0)
+                {
+                    mPuzzle[i - 1][j] = mPuzzle[i][j];
+                    mPuzzle[i][j] = 0;
+                }
+            }
+        }
+    }
+    Game2048::addRandomNums();
+}
+
+void Game2048::moveDown()
+{
+    for (int j = 0; j < 4; j++)
+    {
+        vector<bool> canMove(4, true);
+        for (int k = 4 - 1; k >= 0; k--)
+        {
+            for (int i = k; i < 4 - 1 && canMove[i + 1]; i++)
+            {
+                if (mPuzzle[i][j] == mPuzzle[i + 1][j] && mPuzzle[i][j] != 0)
+                {
+                    mPuzzle[i + 1][j] *= 2;
+                    if(mPuzzle[i + 1][j] == mGoal)
+                    {
+                        mWin = true;
+                    }
+                    mPuzzle[i][j] = 0;
+                    canMove[i + 1] = false;
+                    break;
+                }
+                else if (mPuzzle[i + 1][j] == 0)
+                {
+                    mPuzzle[i + 1][j] = mPuzzle[i][j];
+                    mPuzzle[i][j] = 0;
+                }
+            }
+        }
+    }
+    Game2048::addRandomNums();
 }

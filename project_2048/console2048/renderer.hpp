@@ -6,6 +6,8 @@
 class Renderer
 {
     Game2048 &mGame;
+
+public:
     Renderer(Game2048 &game)
         : mGame(game)
     {
@@ -17,8 +19,9 @@ class Renderer
         {
             for (int j = 0; j < 4; j++)
             {
-                std::cout << std::setw(5) << mGame.getAt(i, j) << std::endl;
+                std::cout << std::setw(5) << mGame.getAt(i, j) << " ";
             }
+            std::cout << std::endl;
         }
     }
 };
