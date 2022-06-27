@@ -87,6 +87,11 @@ int main(int argc, char *argv[])
             cout << "Congratulations!!!\n";
             break;
         }
+        if(!game.canMove())
+        {
+            cout << "Game lost";
+            break;
+        }
         cout << "cmd> ";
     }
 }

@@ -14,6 +14,7 @@ public:
     int getAt(int r, int c) const;
     bool getWinStatus() const;
     int getCurrScore() const;
+    bool canMove();
     void moveLeft();
     void moveRight();
     void moveUp();

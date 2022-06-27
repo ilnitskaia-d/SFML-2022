@@ -55,6 +55,27 @@ int Game2048::getCurrScore() const
     return mCurrScore;
 }
 
+bool Game2048::canMove()
+{
+    for (int i = 0; i < mPuzzle.size(); i++)
+    {
+        for (int j = 0; j < mPuzzle[i].size(); j++)
+        {
+            int curNum = mPuzzle[i][j];
+            if (curNum == 0)
+            {
+                return true;
+            }
+
+            if ((j + 1 < mPuzzle.size() && (curNum == mPuzzle[i][j + 1] || mPuzzle[i][j + 1] == 0)) || (j - 1 >= 0 && (curNum == mPuzzle[i][j - 1] || mPuzzle[i][j - 1] == 0)) || (i + 1 < mPuzzle.size() && (curNum == mPuzzle[i + 1][j] || mPuzzle[i + 1][j] == 0)) || (i - 1 >= 0 && (curNum == mPuzzle[i - 1][j] || mPuzzle[i - 1][j] == 0)))
+            {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 void Game2048::moveLeft()
 {
     for (int i = 0; i < 4; i++)
