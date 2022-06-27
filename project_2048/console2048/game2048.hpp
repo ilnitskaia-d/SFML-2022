@@ -12,9 +12,10 @@ public:
     Game2048(int goal = 16);
     void addRandomNums();
     int getAt(int r, int c) const;
+    bool getWinStatus() const;
+    int getCurrScore() const;
     void moveLeft();
     void moveRight();
     void moveUp();
     void moveDown();
-    bool getWinStatus();
 };

@@ -15,6 +15,7 @@ public:
 
     void render() const
     {
+        std::cout << "Score: " << mGame.getCurrScore() << std::endl;
         for (int i = 0; i < 4; i++)
         {
             for (int j = 0; j < 4; j++)

@@ -46,9 +46,9 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    cout << goal << endl;
-
-    Game2048 game;
+    cout << "Game 2048: Join the numbers and get to the number " << goal << endl;
+    cout << "Use commands from [up, right, down, left, exit]" << endl;
+    Game2048 game(goal);
     Renderer renderer(game);
     renderer.render();
     cout << "cmd> ";
@@ -78,13 +78,13 @@ int main(int argc, char *argv[])
         }
         else
         {
-            cout << "unknown command try : left, right, up, down, exit.\n";
+            cout << "Unknown command.Use commands from [up, right, down, left, exit]\n";
             continue;
         }
         renderer.render();
-        if(game.getWinStatus())
+        if (game.getWinStatus())
         {
-            cout << "congrats!!!\n";
+            cout << "Congratulations!!!\n";
             break;
         }
         cout << "cmd> ";

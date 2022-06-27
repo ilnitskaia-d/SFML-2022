@@ -1,5 +1,6 @@
 #include "game2048.hpp"
 #include "..\..\libs\random.hpp"
+#include <iostream>
 
 using namespace std;
 using Random = effolkronium::random_static;
@@ -44,9 +45,14 @@ int Game2048::getAt(int r, int c) const
     return mPuzzle[r][c];
 }
 
-bool Game2048::getWinStatus()
+bool Game2048::getWinStatus() const
 {
     return mWin;
+}
+
+int Game2048::getCurrScore() const
+{
+    return mCurrScore;
 }
 
 void Game2048::moveLeft()
@@ -61,7 +67,8 @@ void Game2048::moveLeft()
                 if (mPuzzle[i][j] == mPuzzle[i][j - 1] && mPuzzle[i][j] != 0)
                 {
                     mPuzzle[i][j - 1] *= 2;
-                    if(mPuzzle[i][j - 1] == mGoal)
+                    mCurrScore += mPuzzle[i][j - 1];
+                    if (mPuzzle[i][j - 1] == mGoal)
                     {
                         mWin = true;
                     }
@@ -92,7 +99,8 @@ void Game2048::moveRight()
                 if (mPuzzle[i][j] == mPuzzle[i][j + 1] && mPuzzle[i][j] != 0)
                 {
                     mPuzzle[i][j + 1] *= 2;
-                    if(mPuzzle[i][j + 1] == mGoal)
+                    mCurrScore += mPuzzle[i][j + 1];
+                    if (mPuzzle[i][j + 1] == mGoal)
                     {
                         mWin = true;
                     }
@@ -123,7 +131,8 @@ void Game2048::moveUp()
                 if (mPuzzle[i][j] == mPuzzle[i - 1][j] && mPuzzle[i][j] != 0)
                 {
                     mPuzzle[i - 1][j] *= 2;
-                    if(mPuzzle[i - 1][j] == mGoal)
+                    mCurrScore += mPuzzle[i - 1][j];
+                    if (mPuzzle[i - 1][j] == mGoal)
                     {
                         mWin = true;
                     }
@@ -154,7 +163,8 @@ void Game2048::moveDown()
                 if (mPuzzle[i][j] == mPuzzle[i + 1][j] && mPuzzle[i][j] != 0)
                 {
                     mPuzzle[i + 1][j] *= 2;
-                    if(mPuzzle[i + 1][j] == mGoal)
+                    mCurrScore += mPuzzle[i + 1][j];
+                    if (mPuzzle[i + 1][j] == mGoal)
                     {
                         mWin = true;
                     }
