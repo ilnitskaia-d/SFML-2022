@@ -76,6 +76,10 @@ int main(int argc, char *argv[])
         {
             break;
         }
+        else if (cmd == "animate")
+        {
+            renderer.renderFrames();
+        }
         else
         {
             cout << "Unknown command.Use commands from [up, right, down, left, exit]\n";
@@ -93,5 +97,6 @@ int main(int argc, char *argv[])
             break;
         }
         cout << "cmd> ";
+
     }
 }

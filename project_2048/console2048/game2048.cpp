@@ -1,6 +1,7 @@
 #include "game2048.hpp"
 #include "..\..\libs\random.hpp"
 #include <iostream>
+#include <fstream>
 
 using namespace std;
 using Random = effolkronium::random_static;
@@ -8,8 +9,31 @@ using Random = effolkronium::random_static;
 Game2048::Game2048(int goal)
     : mPuzzle(4, vector<int>(4)), mGoal(goal), mCurrScore(0), mWin(false)
 {
+    vector<int> nums = {2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048};
+    ifstream finp("best.data");
+    for (int n : nums)
+    {
+        int inp;
+        finp >> inp;
+        mBestScore[n] = inp;
+    }
     addRandomNums();
     addRandomNums();
+}
+
+Game2048::~Game2048()
+{
+    ofstream fout("best.data");
+
+    for (auto &[k, n] : mBestScore)
+    {
+        fout << n << "\n";
+    }
+
+    for (auto el : mBestScore)
+    {
+        cout << el.first << " " << el.second << endl;
+    }
 }
 
 void Game2048::addRandomNums()
@@ -55,6 +79,18 @@ int Game2048::getCurrScore() const
     return mCurrScore;
 }
 
+vector<vector<int>> Game2048::popFrame()
+{
+    vector<vector<int>> frame = mFrames.front();
+    mFrames.pop();
+    return frame;
+}
+
+bool Game2048::isFramesEmpty()
+{
+    return mFrames.empty();
+}
+
 bool Game2048::canMove()
 {
     for (int i = 0; i < mPuzzle.size(); i++)
@@ -78,128 +114,161 @@ bool Game2048::canMove()
 
 void Game2048::moveLeft()
 {
-    for (int i = 0; i < 4; i++)
+    for (int step = 0; step < 3; ++step)
     {
-        vector<bool> canMove(4, true);
-        for (int k = 0; k < 4; k++)
+        bool isChanged = false;
+        vector<vector<bool>> merged(4, vector<bool>(4, true));
+        for (int r = 0; r < 4; r++)
         {
-            for (int j = k; j > 0 && canMove[j - 1]; j--)
+            for (int c = 1; c < 4; c++)
             {
-                if (mPuzzle[i][j] == mPuzzle[i][j - 1] && mPuzzle[i][j] != 0)
+                if (mPuzzle[r][c] != 0 && mPuzzle[r][c - 1] == 0)
                 {
-                    mPuzzle[i][j - 1] *= 2;
-                    mCurrScore += mPuzzle[i][j - 1];
-                    if (mPuzzle[i][j - 1] == mGoal)
+                    mPuzzle[r][c - 1] = mPuzzle[r][c];
+                    mPuzzle[r][c] = 0;
+                    isChanged = true;
+                }
+                else if (mPuzzle[r][c] == mPuzzle[r][c - 1] && merged[r][c - 1])
+                {
+                    mPuzzle[r][c - 1] *= 2;
+                    mCurrScore += mPuzzle[r][c - 1];
+                    mBestScore[mGoal] = max(mCurrScore, mBestScore[mGoal]);
+                    if (mPuzzle[r][c - 1] == mGoal)
                     {
                         mWin = true;
                     }
-                    mPuzzle[i][j] = 0;
-                    canMove[j - 1] = false;
-                    break;
-                }
-                else if (mPuzzle[i][j - 1] == 0)
-                {
-                    mPuzzle[i][j - 1] = mPuzzle[i][j];
-                    mPuzzle[i][j] = 0;
+                    mPuzzle[r][c] = 0;
+                    merged[r][c - 1] = false;
+                    isChanged = true;
                 }
             }
         }
+        if (isChanged)
+        {
+            mFrames.push(mPuzzle);
+        }
     }
-    Game2048::addRandomNums();
+    addRandomNums();
 }
 
 void Game2048::moveRight()
 {
-    for (int i = 0; i < 4; i++)
+    for (int step = 0; step < 3; ++step)
     {
-        vector<bool> canMove(4, true);
-        for (int k = 4 - 1; k >= 0; k--)
+        bool isChanged = false;
+        vector<vector<bool>> merged(4, vector<bool>(4, true));
+        for (int r = 0; r < 4; r++)
         {
-            for (int j = k; j < 4 - 1 && canMove[j + 1]; j++)
+            for (int c = 2; c >= 0; c--)
             {
-                if (mPuzzle[i][j] == mPuzzle[i][j + 1] && mPuzzle[i][j] != 0)
+                if (mPuzzle[r][c] != 0 && mPuzzle[r][c + 1] == 0)
                 {
-                    mPuzzle[i][j + 1] *= 2;
-                    mCurrScore += mPuzzle[i][j + 1];
-                    if (mPuzzle[i][j + 1] == mGoal)
+                    mPuzzle[r][c + 1] = mPuzzle[r][c];
+                    mPuzzle[r][c] = 0;
+                    isChanged = true;
+                }
+                else if (mPuzzle[r][c] == mPuzzle[r][c + 1] && merged[r][c + 1])
+                {
+                    mPuzzle[r][c + 1] *= 2;
+                    mCurrScore += mPuzzle[r][c + 1];
+                    mBestScore[mGoal] = max(mCurrScore, mBestScore[mGoal]);
+                    if (mPuzzle[r][c + 1] == mGoal)
                     {
                         mWin = true;
                     }
-                    mPuzzle[i][j] = 0;
-                    canMove[j + 1] = false;
-                    break;
-                }
-                else if (mPuzzle[i][j + 1] == 0)
-                {
-                    mPuzzle[i][j + 1] = mPuzzle[i][j];
-                    mPuzzle[i][j] = 0;
+                    mPuzzle[r][c] = 0;
+                    merged[r][c + 1] = false;
+                    isChanged = true;
                 }
             }
         }
+        if (isChanged)
+        {
+            mFrames.push(mPuzzle);
+        }
     }
-    Game2048::addRandomNums();
+    addRandomNums();
 }
 
 void Game2048::moveUp()
 {
-    for (int j = 0; j < 4; j++)
+    for (int step = 0; step < 3; ++step)
     {
-        vector<bool> canMove(4, true);
-        for (int k = 0; k < 4; k++)
+        bool isChanged = false;
+        vector<vector<bool>> merged(4, vector<bool>(4, true));
+        for (int c = 0; c < 4; c++)
         {
-            for (int i = k; i > 0 && canMove[i - 1]; i--)
+            for (int r = 1; r < 4; r++)
             {
-                if (mPuzzle[i][j] == mPuzzle[i - 1][j] && mPuzzle[i][j] != 0)
+                if (mPuzzle[r][c] != 0 && mPuzzle[r - 1][c] == 0)
                 {
-                    mPuzzle[i - 1][j] *= 2;
-                    mCurrScore += mPuzzle[i - 1][j];
-                    if (mPuzzle[i - 1][j] == mGoal)
+                    mPuzzle[r - 1][c] = mPuzzle[r][c];
+                    mPuzzle[r][c] = 0;
+                    isChanged = true;
+                }
+                else if (mPuzzle[r][c] == mPuzzle[r - 1][c] && merged[r - 1][c])
+                {
+                    mPuzzle[r - 1][c] *= 2;
+                    mCurrScore += mPuzzle[r - 1][c];
+                    mBestScore[mGoal] = max(mCurrScore, mBestScore[mGoal]);
+                    if (mPuzzle[r - 1][c] == mGoal)
                     {
                         mWin = true;
                     }
-                    mPuzzle[i][j] = 0;
-                    canMove[i - 1] = false;
-                    break;
-                }
-                else if (mPuzzle[i - 1][j] == 0)
-                {
-                    mPuzzle[i - 1][j] = mPuzzle[i][j];
-                    mPuzzle[i][j] = 0;
+                    mPuzzle[r][c] = 0;
+                    merged[r - 1][c] = false;
+                    isChanged = true;
                 }
             }
         }
+        if (isChanged)
+        {
+            mFrames.push(mPuzzle);
+        }
     }
-    Game2048::addRandomNums();
+    addRandomNums();
 }
 
 void Game2048::moveDown()
 {
-    for (int j = 0; j < 4; j++)
+    for (int step = 0; step < 3; ++step)
     {
-        vector<bool> canMove(4, true);
-        for (int k = 4 - 1; k >= 0; k--)
+        bool isChanged = false;
+        vector<vector<bool>> merged(4, vector<bool>(4, true));
+        for (int c = 0; c < 4; c++)
         {
-            for (int i = k; i < 4 - 1 && canMove[i + 1]; i++)
+            for (int r = 2; r >= 0; r--)
             {
-                if (mPuzzle[i][j] == mPuzzle[i + 1][j] && mPuzzle[i][j] != 0)
+                if (mPuzzle[r][c] != 0 && mPuzzle[r + 1][c] == 0)
                 {
-                    mPuzzle[i + 1][j] *= 2;
-                    mCurrScore += mPuzzle[i + 1][j];
-                    if (mPuzzle[i + 1][j] == mGoal)
+                    mPuzzle[r + 1][c] = mPuzzle[r][c];
+                    mPuzzle[r][c] = 0;
+                    isChanged = true;
+                }
+                else if (mPuzzle[r][c] == mPuzzle[r + 1][c] && merged[r + 1][c])
+                {
+                    mPuzzle[r + 1][c] *= 2;
+                    mCurrScore += mPuzzle[r + 1][c];
+                    mBestScore[mGoal] = max(mCurrScore, mBestScore[mGoal]);
+                    if (mPuzzle[r + 1][c] == mGoal)
                     {
                         mWin = true;
                     }
-                    mPuzzle[i][j] = 0;
-                    canMove[i + 1] = false;
-                    break;
-                }
-                else if (mPuzzle[i + 1][j] == 0)
-                {
-                    mPuzzle[i + 1][j] = mPuzzle[i][j];
-                    mPuzzle[i][j] = 0;
+                    mPuzzle[r][c] = 0;
+                    merged[r + 1][c] = false;
+                    isChanged = true;
                 }
             }
         }
+        if (isChanged)
+        {
+            mFrames.push(mPuzzle);
+        }
     }
-    Game2048::addRandomNums();
+    addRandomNums();
+}
+
+int Game2048::getBestScore() const
+{
+    return mBestScore.find(mGoal)->second;
 }
