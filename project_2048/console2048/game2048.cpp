@@ -114,10 +114,10 @@ bool Game2048::canMove()
 
 void Game2048::moveLeft()
 {
+    vector<vector<bool>> merged(4, vector<bool>(4, true));
     for (int step = 0; step < 3; ++step)
     {
         bool isChanged = false;
-        vector<vector<bool>> merged(4, vector<bool>(4, true));
         for (int r = 0; r < 4; r++)
         {
             for (int c = 1; c < 4; c++)

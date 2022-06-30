@@ -114,10 +114,10 @@ bool Game2048::canMove()
 
 void Game2048::moveLeft()
 {
+    vector<vector<bool>> merged(4, vector<bool>(4, true));
     for (int step = 0; step < 3; ++step)
     {
         bool isChanged = false;
-        vector<vector<bool>> merged(4, vector<bool>(4, true));
         for (int r = 0; r < 4; r++)
         {
             for (int c = 1; c < 4; c++)
@@ -128,7 +128,7 @@ void Game2048::moveLeft()
                     mPuzzle[r][c] = 0;
                     isChanged = true;
                 }
-                else if (mPuzzle[r][c] == mPuzzle[r][c - 1] && merged[r][c - 1])
+                else if (mPuzzle[r][c] == mPuzzle[r][c - 1] && merged[r][c - 1] && merged[r][c])
                 {
                     mPuzzle[r][c - 1] *= 2;
                     mCurrScore += mPuzzle[r][c - 1];
@@ -153,10 +153,10 @@ void Game2048::moveLeft()
 
 void Game2048::moveRight()
 {
+    vector<vector<bool>> merged(4, vector<bool>(4, true));
     for (int step = 0; step < 3; ++step)
     {
         bool isChanged = false;
-        vector<vector<bool>> merged(4, vector<bool>(4, true));
         for (int r = 0; r < 4; r++)
         {
             for (int c = 2; c >= 0; c--)
@@ -167,7 +167,7 @@ void Game2048::moveRight()
                     mPuzzle[r][c] = 0;
                     isChanged = true;
                 }
-                else if (mPuzzle[r][c] == mPuzzle[r][c + 1] && merged[r][c + 1])
+                else if (mPuzzle[r][c] == mPuzzle[r][c + 1] && merged[r][c + 1] && merged[r][c])
                 {
                     mPuzzle[r][c + 1] *= 2;
                     mCurrScore += mPuzzle[r][c + 1];
@@ -192,10 +192,10 @@ void Game2048::moveRight()
 
 void Game2048::moveUp()
 {
+    vector<vector<bool>> merged(4, vector<bool>(4, true));
     for (int step = 0; step < 3; ++step)
     {
         bool isChanged = false;
-        vector<vector<bool>> merged(4, vector<bool>(4, true));
         for (int c = 0; c < 4; c++)
         {
             for (int r = 1; r < 4; r++)
@@ -206,7 +206,7 @@ void Game2048::moveUp()
                     mPuzzle[r][c] = 0;
                     isChanged = true;
                 }
-                else if (mPuzzle[r][c] == mPuzzle[r - 1][c] && merged[r - 1][c])
+                else if (mPuzzle[r][c] == mPuzzle[r - 1][c] && merged[r - 1][c] && merged[r][c])
                 {
                     mPuzzle[r - 1][c] *= 2;
                     mCurrScore += mPuzzle[r - 1][c];
@@ -231,10 +231,10 @@ void Game2048::moveUp()
 
 void Game2048::moveDown()
 {
+    vector<vector<bool>> merged(4, vector<bool>(4, true));
     for (int step = 0; step < 3; ++step)
     {
         bool isChanged = false;
-        vector<vector<bool>> merged(4, vector<bool>(4, true));
         for (int c = 0; c < 4; c++)
         {
             for (int r = 2; r >= 0; r--)
@@ -245,7 +245,7 @@ void Game2048::moveDown()
                     mPuzzle[r][c] = 0;
                     isChanged = true;
                 }
-                else if (mPuzzle[r][c] == mPuzzle[r + 1][c] && merged[r + 1][c])
+                else if (mPuzzle[r][c] == mPuzzle[r + 1][c] && merged[r + 1][c] && merged[r][c])
                 {
                     mPuzzle[r + 1][c] *= 2;
                     mCurrScore += mPuzzle[r + 1][c];
