@@ -46,54 +46,55 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    cout << "Game 2048: Join the numbers and get to the number " << goal << endl;
-    cout << "Use commands from [up, right, down, left, exit]" << endl;
     Game2048 game(goal);
     Renderer renderer(game);
-    renderer.render();
-    cout << "cmd> ";
-
-    string cmd;
-    while (cin >> cmd)
+    sf::RenderWindow window(sf::VideoMode(800, 600), "SFML app");
+    window.setVerticalSyncEnabled(true);
+    renderer.render(window);
+    
+    sf::Event event;
+    while (window.isOpen())
     {
-        if (cmd == "left")
+        while (window.pollEvent(event))
         {
-            game.moveLeft();
-        }
-        else if (cmd == "right")
-        {
-            game.moveRight();
-        }
-        else if (cmd == "up")
-        {
-            game.moveUp();
-        }
-        else if (cmd == "down")
-        {
-            game.moveDown();
-        }
-        else if (cmd == "exit")
-        {
-            break;
-        }
-        else
-        {
-            cout << "Unknown command. Use commands from [up, right, down, left, exit]\n";
-            continue;
-        }
-        renderer.render();
-        
-        if (game.getWinStatus())
-        {
-            cout << "Congratulations!!!\n";
-            break;
-        }
-        if(!game.canMove())
-        {
-            cout << "Game lost";
-            break;
-        }
-        cout << "cmd> ";
+            if (event.type == sf::Event::Closed)
+            {
+                window.close();
+            }
+            else if (event.type == sf::Event::KeyPressed)
+            {
+                if (event.key.code == sf::Keyboard::Left)
+                {
+                    game.moveLeft();
+                }
+                else if (event.key.code == sf::Keyboard::Right)
+                {
+                    game.moveRight();
+                }
+                else if (event.key.code == sf::Keyboard::Up)
+                {
+                    game.moveUp();
+                }
+                else if (event.key.code == sf::Keyboard::Down)
+                {
+                    game.moveDown();
+                }
+            }
 
+            renderer.renderFrames(window);
+
+            window.display();
+            // if (game.getWinStatus())
+            // {
+            //     cout << "Congratulations!!!\n";
+            //     break;
+            // }
+
+            // if (!game.canMove())
+            // {
+            //     cout << "Game lost";
+            //     break;
+            // }
+        }
     }
 }
