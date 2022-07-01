@@ -47,11 +47,11 @@ int main(int argc, char *argv[])
     }
 
     Game2048 game(goal);
-    Renderer renderer(game);
     sf::RenderWindow window(sf::VideoMode(800, 600), "SFML app");
+    Renderer renderer(game, window);
     window.setVerticalSyncEnabled(true);
-    renderer.render(window);
-    
+    renderer.render();
+
     sf::Event event;
     while (window.isOpen())
     {
@@ -80,21 +80,22 @@ int main(int argc, char *argv[])
                     game.moveDown();
                 }
             }
-
-            renderer.renderFrames(window);
+            window.clear();
+            // renderer.renderFrames(window);
+            renderer.render();
 
             window.display();
-            // if (game.getWinStatus())
-            // {
-            //     cout << "Congratulations!!!\n";
-            //     break;
-            // }
+            if (game.getWinStatus())
+            {
+                cout << "Congratulations!!!\n";
+                break;
+            }
 
-            // if (!game.canMove())
-            // {
-            //     cout << "Game lost";
-            //     break;
-            // }
+            if (!game.canMove())
+            {
+                cout << "Game lost";
+                break;
+            }
         }
     }
 }

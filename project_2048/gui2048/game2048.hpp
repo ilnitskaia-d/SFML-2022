@@ -18,16 +18,23 @@ private:
 public:
     Game2048(int goal = 16);
     ~Game2048();
+
     void addRandomNums();
     int getAt(int r, int c) const;
     bool getWinStatus() const;
     int getCurrScore() const;
+
     std::vector<std::vector<int>> popFrame();
+    bool isFramesEmpty();
+    
     bool canMove();
+
     void moveLeft();
     void moveRight();
     void moveUp();
     void moveDown();
+    
     int getBestScore() const;
-    bool isFramesEmpty();
+
+    void eventProcess();
 };
