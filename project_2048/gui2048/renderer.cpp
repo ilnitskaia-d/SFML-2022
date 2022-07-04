@@ -28,17 +28,6 @@ Renderer::Renderer(Game2048 &game, sf::RenderWindow &window, sf::Font &font)
     currScoreText.setFillColor(sf::Color::Magenta);
 }
 
-void Renderer::renderText()
-{
-    // sf::Text winningText("Congrats!!!", font);
-    // winningText.setCharacterSize(80);
-    // winningText.setFillColor(sf::Color::Magenta);
-
-    // sf::Text losingText("You lost", font);
-    // losingText.setCharacterSize(80);
-    // losingText.setFillColor(sf::Color::Red);
-}
-
 void Renderer::render()
 {
     vector<vector<int>> puzzle = mGame.getNextFrame();
