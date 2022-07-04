@@ -52,10 +52,6 @@ void Game2048::addRandomNums()
 
     int size = freeTiles.size() - 1;
     int tile = Random::get(0, size);
-    if(tile < 0)
-    {
-        return;
-    }
     int prob = Random::get(1, 10);
 
     if (prob < 3)
@@ -86,6 +82,11 @@ bool Game2048::getLostStatus() const
 int Game2048::getCurrScore() const
 {
     return mCurrScore;
+}
+
+int Game2048::getGoal() const
+{
+    return mGoal;
 }
 
 vector<vector<int>> Game2048::popFrame()

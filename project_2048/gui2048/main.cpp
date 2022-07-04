@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
 
     sf::Text winningText("Congrats!!!", font);
     winningText.setCharacterSize(80);
-    winningText.setFillColor(sf::Color::Magenta);
+    winningText.setFillColor(sf::Color::Cyan);
 
     sf::Text losingText("You lost", font);
     losingText.setCharacterSize(80);
@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
     losingText.setPosition(sf::Vector2f(textX2, textY2));
 
 
-    const sf::Time framesPerSec = sf::seconds(0.07f);
+    const sf::Time framesPerSec = sf::seconds(0.06f);
     sf::Time totalTime = sf::Time::Zero;
     sf::Clock clock;
     while (window.isOpen())
@@ -85,13 +85,11 @@ int main(int argc, char *argv[])
             renderer.render();
             if (game.getWinStatus())
             {
-                // won
                 window.draw(winningText);
             }
 
             if (!game.canMove())
             {
-                // lost
                 window.draw(losingText);
             }
 

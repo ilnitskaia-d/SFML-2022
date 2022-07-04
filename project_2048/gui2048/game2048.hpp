@@ -28,6 +28,7 @@ public:
     bool getWinStatus() const;
     bool getLostStatus() const;
     int getCurrScore() const;
+    int getGoal() const;
 
     std::vector<std::vector<int>> popFrame();
     bool isFramesEmpty();

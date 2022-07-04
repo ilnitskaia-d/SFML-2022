@@ -3,16 +3,29 @@
 using namespace std;
 
 Renderer::Renderer(Game2048 &game, sf::RenderWindow &window, sf::Font &font)
-    : mGame(game), mWindow(window), mBlockSize(100), mFont(font)
+    : mGame(game), mWindow(window), mFont(font)
 {
+    mBlockSize = min(mWindow.getSize().x, mWindow.getSize().y) / 8;
+
     nameText.setFont(mFont);
     nameText.setString("Game 2048");
     nameText.setCharacterSize(50);
     nameText.setFillColor(sf::Color::Magenta);
     float x = mWindow.getSize().x / 2 - nameText.getLocalBounds().width / 2;
-    float y = 0 + nameText.getLocalBounds().height;
+    float y = 0 + nameText.getLocalBounds().height / 2;
     nameText.setPosition(sf::Vector2f(x, y));
-    
+
+    goalText.setFont(mFont);
+    goalText.setCharacterSize(40);
+    goalText.setFillColor(sf::Color::Magenta);
+
+    bestScoreText.setFont(mFont);
+    bestScoreText.setCharacterSize(40);
+    bestScoreText.setFillColor(sf::Color::Magenta);
+
+    currScoreText.setFont(mFont);
+    currScoreText.setCharacterSize(40);
+    currScoreText.setFillColor(sf::Color::Magenta);
 }
 
 void Renderer::renderText()
@@ -33,10 +46,23 @@ void Renderer::render()
     float x = mWindow.getSize().x / 2 - mBlockSize * 2;
     float y = mWindow.getSize().y / 2 - mBlockSize * 2;
 
+    mWindow.draw(nameText);
+
+    goalText.setString("Goal: \n" + to_string(mGame.getGoal()));
+    goalText.setPosition(sf::Vector2f(x - goalText.getLocalBounds().width, mWindow.getSize().y / 4 + goalText.getLocalBounds().height));
+    mWindow.draw(goalText);
+
+    currScoreText.setString("Score: \n" + to_string(mGame.getCurrScore()));
+    currScoreText.setPosition(sf::Vector2f(mWindow.getSize().x / 2 + mBlockSize * 2 + currScoreText.getLocalBounds().width / 4, mWindow.getSize().y / 4 + currScoreText.getLocalBounds().height));
+    mWindow.draw(currScoreText);
+    bestScoreText.setString("Best: \n" + to_string(mGame.getBestScore()));
+    bestScoreText.setPosition(sf::Vector2f(currScoreText.getPosition().x, currScoreText.getPosition().y + currScoreText.getLocalBounds().height * 2));
+    mWindow.draw(bestScoreText);
+
     sf::RectangleShape field;
     field.setSize(sf::Vector2f(mBlockSize * 4, mBlockSize * 4));
     field.setPosition(sf::Vector2f(x, y));
-    sf::Color color(100, 100, 100);
+    sf::Color color(170, 170, 170);
     field.setFillColor(color);
     field.setOutlineColor(color);
     field.setOutlineThickness(10);
@@ -87,14 +113,13 @@ void Renderer::render()
                     break;
                 }
                 sprite.setTexture(texture);
+                sprite.setScale(sf::Vector2f(mBlockSize / texture.getSize().x, mBlockSize / texture.getSize().y));
                 sprite.setPosition(sf::Vector2f(x, y));
                 mWindow.draw(sprite);
             }
-            x += 100;
+            x += mBlockSize;
         }
         x = mWindow.getSize().x / 2 - mBlockSize * 2;
-        y += 100;
+        y += mBlockSize;
     }
-    
-    mWindow.draw(nameText);
 }
