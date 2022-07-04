@@ -11,11 +11,15 @@ class Renderer
     Game2048 &mGame;
     sf::RenderWindow &mWindow;
     float mBlockSize;
+    sf::Font &mFont;
+    sf::Text nameText;
+    sf::Text goalText;
+    sf::Text bestScoreText;
+    sf::Text currScoreText;
 
 public:
-    Renderer(Game2048 &game, sf::RenderWindow &window);
+    Renderer(Game2048 &game, sf::RenderWindow &window, sf::Font &font);
 
-    void render() const;
-    void renderConsole() const;
-    void renderFrames();
+    void renderText();
+    void render();
 };

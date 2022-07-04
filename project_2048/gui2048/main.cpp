@@ -45,27 +45,30 @@ int main(int argc, char *argv[])
         cout << "Wrong input\n";
         exit(1);
     }
+    sf::Font font;
+    font.loadFromFile("data/BULKYPIX.TTF");
 
     sf::RenderWindow window(sf::VideoMode(800, 600), "SFML app");
     Game2048 game(window, goal);
-    Renderer renderer(game, window);
+    Renderer renderer(game, window, font);
     window.setVerticalSyncEnabled(true);
     renderer.render();
 
-    sf::Font font;
-    font.loadFromFile("data/AlamedaScript.otf");
-
-    sf::Text winningText("Congrats!!", font);
+    sf::Text winningText("Congrats!!!", font);
     winningText.setCharacterSize(80);
-    winningText.setFillColor(sf::Color::Cyan);
-    float textX = window.getSize().x / 2 - winningText.getLocalBounds().width / 2;
-    float textY = window.getSize().y / 2 - winningText.getLocalBounds().height;
-    winningText.setPosition(sf::Vector2f(textX, textY));
+    winningText.setFillColor(sf::Color::Magenta);
 
     sf::Text losingText("You lost", font);
     losingText.setCharacterSize(80);
     losingText.setFillColor(sf::Color::Red);
-    losingText.setPosition(sf::Vector2f(textX, textY));
+
+    float textX1 = window.getSize().x / 2 - winningText.getLocalBounds().width / 2;
+    float textY1 = window.getSize().y / 2 - winningText.getLocalBounds().height;
+    winningText.setPosition(sf::Vector2f(textX1, textY1));
+    float textX2 = window.getSize().x / 2 - losingText.getLocalBounds().width / 2;
+    float textY2 = window.getSize().y / 2 - losingText.getLocalBounds().height;
+    losingText.setPosition(sf::Vector2f(textX2, textY2));
+
 
     const sf::Time framesPerSec = sf::seconds(0.07f);
     sf::Time totalTime = sf::Time::Zero;
@@ -77,7 +80,6 @@ int main(int argc, char *argv[])
         if (totalTime > framesPerSec)
         {
             totalTime -= framesPerSec;
-            // update();
 
             window.clear();
             renderer.render();
@@ -85,7 +87,6 @@ int main(int argc, char *argv[])
             {
                 // won
                 window.draw(winningText);
-                // window.display();
             }
 
             if (!game.canMove())
@@ -93,12 +94,10 @@ int main(int argc, char *argv[])
                 // lost
                 window.draw(losingText);
             }
-            window.display();
-        }
 
-        if (game.canMove())
-        {
             game.eventProcess();
+
+            window.display();
         }
     }
 }

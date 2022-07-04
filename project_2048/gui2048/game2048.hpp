@@ -10,6 +10,7 @@ class Game2048
     int mGoal;
     int mCurrScore;
     bool mWin;
+    bool mLost;
     std::map<int, int> mBestScore;
     std::queue<std::vector<std::vector<int>>> mFrames;
     bool mIsMoving;
@@ -25,19 +26,20 @@ public:
     void addRandomNums();
     int getAt(int r, int c) const;
     bool getWinStatus() const;
+    bool getLostStatus() const;
     int getCurrScore() const;
 
     std::vector<std::vector<int>> popFrame();
     bool isFramesEmpty();
     std::vector<std::vector<int>> getNextFrame();
-    
+
     bool canMove();
 
     void moveLeft();
     void moveRight();
     void moveUp();
     void moveDown();
-    
+
     int getBestScore() const;
 
     void eventProcess();

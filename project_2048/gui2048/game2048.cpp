@@ -7,7 +7,7 @@ using namespace std;
 using Random = effolkronium::random_static;
 
 Game2048::Game2048(sf::RenderWindow &window, int goal)
-    : mPuzzle(4, vector<int>(4)), mGoal(goal), mCurrScore(0), mWin(false), mIsMoving(false), mWindow(window)
+    : mPuzzle(4, vector<int>(4)), mGoal(goal), mCurrScore(0), mWin(false), mLost(false), mIsMoving(false), mWindow(window)
 {
     vector<int> nums = {2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048};
     ifstream finp("best.data");
@@ -78,6 +78,11 @@ bool Game2048::getWinStatus() const
     return mWin;
 }
 
+bool Game2048::getLostStatus() const
+{
+    return mLost;
+}
+
 int Game2048::getCurrScore() const
 {
     return mCurrScore;
@@ -123,6 +128,7 @@ bool Game2048::canMove()
             }
         }
     }
+    mLost = true;
     return false;
 }
 
@@ -300,7 +306,7 @@ void Game2048::eventProcess()
         {
             mWindow.close();
         }
-        else if (event.type == sf::Event::KeyPressed)
+        else if (event.type == sf::Event::KeyPressed && !getWinStatus() && !getLostStatus())
         {
             if (event.key.code == sf::Keyboard::Left)
             {

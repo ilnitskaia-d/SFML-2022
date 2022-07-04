@@ -2,12 +2,31 @@
 
 using namespace std;
 
-Renderer::Renderer(Game2048 &game, sf::RenderWindow &window)
-    : mGame(game), mWindow(window), mBlockSize(100)
+Renderer::Renderer(Game2048 &game, sf::RenderWindow &window, sf::Font &font)
+    : mGame(game), mWindow(window), mBlockSize(100), mFont(font)
 {
+    nameText.setFont(mFont);
+    nameText.setString("Game 2048");
+    nameText.setCharacterSize(50);
+    nameText.setFillColor(sf::Color::Magenta);
+    float x = mWindow.getSize().x / 2 - nameText.getLocalBounds().width / 2;
+    float y = 0 + nameText.getLocalBounds().height;
+    nameText.setPosition(sf::Vector2f(x, y));
+    
 }
 
-void Renderer::render() const
+void Renderer::renderText()
+{
+    // sf::Text winningText("Congrats!!!", font);
+    // winningText.setCharacterSize(80);
+    // winningText.setFillColor(sf::Color::Magenta);
+
+    // sf::Text losingText("You lost", font);
+    // losingText.setCharacterSize(80);
+    // losingText.setFillColor(sf::Color::Red);
+}
+
+void Renderer::render()
 {
     vector<vector<int>> puzzle = mGame.getNextFrame();
 
@@ -76,4 +95,6 @@ void Renderer::render() const
         x = mWindow.getSize().x / 2 - mBlockSize * 2;
         y += 100;
     }
+    
+    mWindow.draw(nameText);
 }
