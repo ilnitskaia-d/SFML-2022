@@ -2,6 +2,7 @@
 #include <vector>
 #include <map>
 #include <queue>
+#include <SFML/Graphics.hpp>
 
 class Game2048
 {
@@ -11,12 +12,14 @@ class Game2048
     bool mWin;
     std::map<int, int> mBestScore;
     std::queue<std::vector<std::vector<int>>> mFrames;
+    bool mIsMoving;
+    sf::RenderWindow &mWindow;
 
 private:
     void push();
 
 public:
-    Game2048(int goal = 16);
+    Game2048(sf::RenderWindow &window, int goal = 16);
     ~Game2048();
 
     void addRandomNums();
@@ -26,6 +29,7 @@ public:
 
     std::vector<std::vector<int>> popFrame();
     bool isFramesEmpty();
+    std::vector<std::vector<int>> getNextFrame();
     
     bool canMove();
 

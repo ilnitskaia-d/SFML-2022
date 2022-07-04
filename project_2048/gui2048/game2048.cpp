@@ -6,8 +6,8 @@
 using namespace std;
 using Random = effolkronium::random_static;
 
-Game2048::Game2048(int goal)
-    : mPuzzle(4, vector<int>(4)), mGoal(goal), mCurrScore(0), mWin(false)
+Game2048::Game2048(sf::RenderWindow &window, int goal)
+    : mPuzzle(4, vector<int>(4)), mGoal(goal), mCurrScore(0), mWin(false), mIsMoving(false), mWindow(window)
 {
     vector<int> nums = {2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048};
     ifstream finp("best.data");
@@ -91,6 +91,16 @@ bool Game2048::isFramesEmpty()
     return mFrames.empty();
 }
 
+vector<vector<int>> Game2048::getNextFrame()
+{
+    if (!isFramesEmpty())
+    {
+        return popFrame();
+    }
+
+    return mPuzzle;
+}
+
 bool Game2048::canMove()
 {
     for (int i = 0; i < mPuzzle.size(); i++)
@@ -149,6 +159,7 @@ void Game2048::moveLeft()
         }
     }
     addRandomNums();
+    mIsMoving = false;
 }
 
 void Game2048::moveRight()
@@ -188,6 +199,7 @@ void Game2048::moveRight()
         }
     }
     addRandomNums();
+    mIsMoving = false;
 }
 
 void Game2048::moveUp()
@@ -227,6 +239,7 @@ void Game2048::moveUp()
         }
     }
     addRandomNums();
+    mIsMoving = false;
 }
 
 void Game2048::moveDown()
@@ -266,9 +279,45 @@ void Game2048::moveDown()
         }
     }
     addRandomNums();
+    mIsMoving = false;
 }
 
 int Game2048::getBestScore() const
 {
     return mBestScore.find(mGoal)->second;
+}
+
+void Game2048::eventProcess()
+{
+    sf::Event event;
+    while (mWindow.pollEvent(event))
+    {
+        if (event.type == sf::Event::Closed)
+        {
+            mWindow.close();
+        }
+        else if (event.type == sf::Event::KeyPressed)
+        {
+            if (event.key.code == sf::Keyboard::Left)
+            {
+                moveLeft();
+                mIsMoving = true;
+            }
+            else if (event.key.code == sf::Keyboard::Right)
+            {
+                moveRight();
+                mIsMoving = true;
+            }
+            else if (event.key.code == sf::Keyboard::Up)
+            {
+                moveUp();
+                mIsMoving = true;
+            }
+            else if (event.key.code == sf::Keyboard::Down)
+            {
+                moveDown();
+                mIsMoving = true;
+            }
+        }
+    }
 }

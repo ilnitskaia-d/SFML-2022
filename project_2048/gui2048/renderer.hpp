@@ -17,5 +17,5 @@ public:
 
     void render() const;
     void renderConsole() const;
-    void renderFrames(sf::RenderWindow &window);
+    void renderFrames();
 };

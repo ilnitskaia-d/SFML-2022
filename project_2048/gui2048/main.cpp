@@ -46,56 +46,38 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    Game2048 game(goal);
     sf::RenderWindow window(sf::VideoMode(800, 600), "SFML app");
+    Game2048 game(window, goal);
     Renderer renderer(game, window);
     window.setVerticalSyncEnabled(true);
     renderer.render();
 
-    sf::Event event;
+    const sf::Time framesPerSec = sf::seconds(0.1f);
+    sf::Time totalTime = sf::Time::Zero;
+    sf::Clock clock;
     while (window.isOpen())
     {
-        while (window.pollEvent(event))
+        totalTime += clock.restart();
+        if (totalTime > framesPerSec)
         {
-            if (event.type == sf::Event::Closed)
-            {
-                window.close();
-            }
-            else if (event.type == sf::Event::KeyPressed)
-            {
-                if (event.key.code == sf::Keyboard::Left)
-                {
-                    game.moveLeft();
-                }
-                else if (event.key.code == sf::Keyboard::Right)
-                {
-                    game.moveRight();
-                }
-                else if (event.key.code == sf::Keyboard::Up)
-                {
-                    game.moveUp();
-                }
-                else if (event.key.code == sf::Keyboard::Down)
-                {
-                    game.moveDown();
-                }
-            }
+            totalTime -= framesPerSec;
+            // update();
+            game.eventProcess();
             window.clear();
-            // renderer.renderFrames(window);
             renderer.render();
-
             window.display();
-            if (game.getWinStatus())
-            {
-                cout << "Congratulations!!!\n";
-                break;
-            }
+        }
 
-            if (!game.canMove())
-            {
-                cout << "Game lost";
-                break;
-            }
+        if (game.getWinStatus())
+        {
+            cout << "Congratulations!!!\n";
+            break;
+        }
+
+        if (!game.canMove())
+        {
+            cout << "Game lost";
+            break;
         }
     }
 }

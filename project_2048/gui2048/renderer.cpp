@@ -9,6 +9,11 @@ Renderer::Renderer(Game2048 &game, sf::RenderWindow &window)
 
 void Renderer::render() const
 {
+    //     sf::Text nameText;
+    //     sf::Text goalText;
+    //     sf::Text ScoreText;
+    //     sf::Text BestScoreText;
+    vector<vector<int>> puzzle = mGame.getNextFrame();
 
     float x = mWindow.getSize().x / 2 - mBlockSize * 2;
     float y = mWindow.getSize().y / 2 - mBlockSize * 2;
@@ -21,16 +26,16 @@ void Renderer::render() const
     field.setOutlineColor(color);
     field.setOutlineThickness(10);
     mWindow.draw(field);
-    
+
     sf::Texture texture;
     sf::Sprite sprite;
     for (int i = 0; i < 4; i++)
     {
         for (int j = 0; j < 4; j++)
         {
-            if (mGame.getAt(i, j) != 0)
+            if (puzzle[i][j] != 0)
             {
-                switch (mGame.getAt(i, j))
+                switch (puzzle[i][j])
                 {
                 case 2:
                     texture.loadFromFile("data/2.png");
@@ -91,66 +96,64 @@ void Renderer::renderConsole() const
     }
 }
 
-void Renderer::renderFrames(sf::RenderWindow &window)
-{
-    while (!mGame.isFramesEmpty())
-    {
-        sf::Texture texture;
-        // texture.loadFromFile("data/2.png");
-        sf::Sprite sprite;
-        // sprite.setTexture(texture);
-        float x = window.getSize().x / 2 - 200;
-        float y = window.getSize().y / 2 - 200;
-        for (int i = 0; i < 4; i++)
-        {
-            for (int j = 0; j < 4; j++)
-            {
-                if (mGame.getAt(i, j) != 0)
-                {
-                    switch (mGame.getAt(i, j))
-                    {
-                    case 2:
-                        texture.loadFromFile("data/2.png");
-                        break;
-                    case 4:
-                        texture.loadFromFile("data/4.png");
-                        break;
-                    case 8:
-                        texture.loadFromFile("data/8.png");
-                        break;
-                    case 16:
-                        texture.loadFromFile("data/16.png");
-                        break;
-                    case 32:
-                        texture.loadFromFile("data/32.png");
-                        break;
-                    case 64:
-                        texture.loadFromFile("data/64.png");
-                        break;
-                    case 128:
-                        texture.loadFromFile("data/128.png");
-                        break;
-                    case 256:
-                        texture.loadFromFile("data/256.png");
-                        break;
-                    case 512:
-                        texture.loadFromFile("data/512.png");
-                        break;
-                    case 1024:
-                        texture.loadFromFile("data/1024.png");
-                        break;
-                    case 2048:
-                        texture.loadFromFile("data/2048.png");
-                        break;
-                    }
-                    sprite.setTexture(texture);
-                    sprite.setPosition(sf::Vector2f(x, y));
-                    window.draw(sprite);
-                }
-                x += 100;
-            }
-            x = window.getSize().x / 2 - 100;
-            y += sprite.getLocalBounds().height;
-        }
-    }
-}
+// void Renderer::renderFrames()
+// {
+//     sf::Texture texture;
+//     sf::Sprite sprite;
+//     while (!mGame.isFramesEmpty())
+//     {
+//         float x = mWindow.getSize().x / 2 - mBlockSize * 2;
+//         float y = mWindow.getSize().y / 2 - mBlockSize * 2;
+//         for (int i = 0; i < 4; i++)
+//         {
+//             for (int j = 0; j < 4; j++)
+//             {
+//                 if (mGame.getAt(i, j) != 0)
+//                 {
+//                     switch (mGame.getAt(i, j))
+//                     {
+//                     case 2:
+//                         texture.loadFromFile("data/2.png");
+//                         break;
+//                     case 4:
+//                         texture.loadFromFile("data/4.png");
+//                         break;
+//                     case 8:
+//                         texture.loadFromFile("data/8.png");
+//                         break;
+//                     case 16:
+//                         texture.loadFromFile("data/16.png");
+//                         break;
+//                     case 32:
+//                         texture.loadFromFile("data/32.png");
+//                         break;
+//                     case 64:
+//                         texture.loadFromFile("data/64.png");
+//                         break;
+//                     case 128:
+//                         texture.loadFromFile("data/128.png");
+//                         break;
+//                     case 256:
+//                         texture.loadFromFile("data/256.png");
+//                         break;
+//                     case 512:
+//                         texture.loadFromFile("data/512.png");
+//                         break;
+//                     case 1024:
+//                         texture.loadFromFile("data/1024.png");
+//                         break;
+//                     case 2048:
+//                         texture.loadFromFile("data/2048.png");
+//                         break;
+//                     }
+//                     sprite.setTexture(texture);
+//                     sprite.setPosition(sf::Vector2f(x, y));
+//                     mWindow.draw(sprite);
+//                 }
+//                 x += 100;
+//             }
+//             x = mWindow.getSize().x / 2 - mBlockSize * 2;
+//             y += 100;
+//         }
+//     }
+// }
