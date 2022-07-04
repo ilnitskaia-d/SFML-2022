@@ -13,7 +13,6 @@ class Game2048
     bool mLost;
     std::map<int, int> mBestScore;
     std::queue<std::vector<std::vector<int>>> mFrames;
-    bool mIsMoving;
     sf::RenderWindow &mWindow;
 
 private:
@@ -22,6 +21,7 @@ private:
 public:
     Game2048(sf::RenderWindow &window, int goal = 16);
     ~Game2048();
+    void startNew();
 
     void addRandomNums();
     int getAt(int r, int c) const;

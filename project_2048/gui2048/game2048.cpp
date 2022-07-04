@@ -7,7 +7,7 @@ using namespace std;
 using Random = effolkronium::random_static;
 
 Game2048::Game2048(sf::RenderWindow &window, int goal)
-    : mPuzzle(4, vector<int>(4)), mGoal(goal), mCurrScore(0), mWin(false), mLost(false), mIsMoving(false), mWindow(window)
+    : mPuzzle(4, vector<int>(4)), mGoal(goal), mCurrScore(0), mWin(false), mLost(false), mWindow(window)
 {
     vector<int> nums = {2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048};
     ifstream finp("best.data");
@@ -34,6 +34,26 @@ Game2048::~Game2048()
     {
         cout << el.first << " " << el.second << endl;
     }
+}
+
+void Game2048::startNew()
+{
+    vector<vector<int>> v(4, vector<int>(4));
+    mPuzzle = v;
+    mCurrScore = 0;
+    mWin = false;
+    mLost = false;
+
+    vector<int> nums = {2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048};
+    ifstream finp("best.data");
+    for (int n : nums)
+    {
+        int inp;
+        finp >> inp;
+        mBestScore[n] = inp;
+    }
+    addRandomNums();
+    addRandomNums();
 }
 
 void Game2048::addRandomNums()
@@ -170,7 +190,6 @@ void Game2048::moveLeft()
         }
     }
     addRandomNums();
-    mIsMoving = false;
 }
 
 void Game2048::moveRight()
@@ -210,7 +229,6 @@ void Game2048::moveRight()
         }
     }
     addRandomNums();
-    mIsMoving = false;
 }
 
 void Game2048::moveUp()
@@ -250,7 +268,6 @@ void Game2048::moveUp()
         }
     }
     addRandomNums();
-    mIsMoving = false;
 }
 
 void Game2048::moveDown()
@@ -290,7 +307,6 @@ void Game2048::moveDown()
         }
     }
     addRandomNums();
-    mIsMoving = false;
 }
 
 int Game2048::getBestScore() const
@@ -303,31 +319,43 @@ void Game2048::eventProcess()
     sf::Event event;
     while (mWindow.pollEvent(event))
     {
-        if (event.type == sf::Event::Closed)
+        if (event.type == sf::Event::Closed || (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape))
         {
             mWindow.close();
         }
-        else if (event.type == sf::Event::KeyPressed && !getWinStatus() && !getLostStatus())
+        else if (event.type == sf::Event::KeyPressed)
         {
-            if (event.key.code == sf::Keyboard::Left)
+            if (!getWinStatus() && !getLostStatus())
             {
-                moveLeft();
-                mIsMoving = true;
+                if (event.key.code == sf::Keyboard::Left)
+                {
+                    moveLeft();
+                }
+                else if (event.key.code == sf::Keyboard::Right)
+                {
+                    moveRight();
+                }
+                else if (event.key.code == sf::Keyboard::Up)
+                {
+                    moveUp();
+                }
+                else if (event.key.code == sf::Keyboard::Down)
+                {
+                    moveDown();
+                }
             }
-            else if (event.key.code == sf::Keyboard::Right)
+            if (event.key.code == sf::Keyboard::Enter)
             {
-                moveRight();
-                mIsMoving = true;
+                startNew();
             }
-            else if (event.key.code == sf::Keyboard::Up)
+            else if (event.key.code == sf::Keyboard::Tab)
             {
-                moveUp();
-                mIsMoving = true;
-            }
-            else if (event.key.code == sf::Keyboard::Down)
-            {
-                moveDown();
-                mIsMoving = true;
+                mGoal += mGoal;
+                if (mGoal > 2048)
+                {
+                    mGoal = 16;
+                }
+                startNew();
             }
         }
     }
