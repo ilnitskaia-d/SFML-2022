@@ -52,32 +52,53 @@ int main(int argc, char *argv[])
     window.setVerticalSyncEnabled(true);
     renderer.render();
 
-    const sf::Time framesPerSec = sf::seconds(0.1f);
+    sf::Font font;
+    font.loadFromFile("data/AlamedaScript.otf");
+
+    sf::Text winningText("Congrats!!", font);
+    winningText.setCharacterSize(80);
+    winningText.setFillColor(sf::Color::Cyan);
+    float textX = window.getSize().x / 2 - winningText.getLocalBounds().width / 2;
+    float textY = window.getSize().y / 2 - winningText.getLocalBounds().height;
+    winningText.setPosition(sf::Vector2f(textX, textY));
+
+    sf::Text losingText("You lost", font);
+    losingText.setCharacterSize(80);
+    losingText.setFillColor(sf::Color::Red);
+    losingText.setPosition(sf::Vector2f(textX, textY));
+
+    const sf::Time framesPerSec = sf::seconds(0.07f);
     sf::Time totalTime = sf::Time::Zero;
     sf::Clock clock;
     while (window.isOpen())
     {
+
         totalTime += clock.restart();
         if (totalTime > framesPerSec)
         {
             totalTime -= framesPerSec;
             // update();
-            game.eventProcess();
+
             window.clear();
             renderer.render();
+            if (game.getWinStatus())
+            {
+                // won
+                window.draw(winningText);
+                // window.display();
+            }
+
+            if (!game.canMove())
+            {
+                // lost
+                window.draw(losingText);
+            }
             window.display();
         }
 
-        if (game.getWinStatus())
+        if (game.canMove())
         {
-            cout << "Congratulations!!!\n";
-            break;
-        }
-
-        if (!game.canMove())
-        {
-            cout << "Game lost";
-            break;
+            game.eventProcess();
         }
     }
 }
