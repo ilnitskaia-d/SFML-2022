@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
     sf::Font font;
     font.loadFromFile("data/BULKYPIX.TTF");
 
-    sf::RenderWindow window(sf::VideoMode(800, 600), "SFML app");
+    sf::RenderWindow window(sf::VideoMode(800, 600), "SFML app", sf::Style::Titlebar | sf::Style::Close);
     Game2048 game(window, goal);
     Renderer renderer(game, window, font);
     window.setVerticalSyncEnabled(true);
