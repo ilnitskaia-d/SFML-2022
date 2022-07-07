@@ -5,6 +5,8 @@
 #include <cstdlib>
 #include "game2048.hpp"
 #include "renderer.hpp"
+#include "ScreenSavers.hpp"
+#include "SnowflakesFall.hpp"
 
 using namespace std;
 
@@ -69,10 +71,12 @@ int main(int argc, char *argv[])
     float textY2 = window.getSize().y / 2 - losingText.getLocalBounds().height;
     losingText.setPosition(sf::Vector2f(textX2, textY2));
 
+    SnowflakesFall bg(window);
 
     const sf::Time framesPerSec = sf::seconds(0.06f);
     sf::Time totalTime = sf::Time::Zero;
     sf::Clock clock;
+
     while (window.isOpen())
     {
 
@@ -82,6 +86,7 @@ int main(int argc, char *argv[])
             totalTime -= framesPerSec;
 
             window.clear();
+            bg.draw();
             renderer.render();
             if (game.getWinStatus())
             {
