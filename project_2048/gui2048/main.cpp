@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
     window.setVerticalSyncEnabled(true);
     renderer.render();
 
-    sf::Text winningText("Congrats!!!", font);
+    sf::Text winningText("You won!!!", font);
     winningText.setCharacterSize(80);
     winningText.setFillColor(sf::Color::Cyan);
 

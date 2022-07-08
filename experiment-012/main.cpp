@@ -8,9 +8,8 @@ int main()
 {
     sf::RenderWindow window(sf::VideoMode(800, 600), "SFML app");
     window.setVerticalSyncEnabled(true);
-    
+
     SnowflakesFall bg(window);
-    int dir = 0;
     while (window.isOpen())
     {
         sf::Event event;
@@ -24,8 +23,7 @@ int main()
         }
 
         window.clear();
-        bg.draw(dir);
+        bg.draw();
         window.display();
-        dir++;
     }
 }

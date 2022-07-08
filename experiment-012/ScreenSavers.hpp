@@ -9,11 +9,12 @@ protected:
     sf::RenderWindow &mWindow;
     int mPartCount;
     std::vector<std::pair<int, int>> mCoords;
+
 public:
     ScreenSavers(sf::RenderWindow &window)
-        : mWindow(window), mPartCount(10)
+        : mWindow(window), mPartCount(1), mCoords(mPartCount)
     {
     }
 
-    virtual void draw(int dir) = 0;
+    virtual void draw() = 0;
 };

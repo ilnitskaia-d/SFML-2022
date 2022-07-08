@@ -1,12 +1,12 @@
 #pragma once
 #include "ScreenSavers.hpp"
 #include <vector>
-#include <memory>
 
 class SnowflakesFall : public ScreenSavers
 {
+    std::vector<int> mSizes;
 public:
     SnowflakesFall(sf::RenderWindow &window);
 
-    void draw(int dir) override;
+    void draw() override;
 };
