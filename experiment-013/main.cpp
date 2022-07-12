@@ -13,9 +13,9 @@ int main()
     Player player(window);
     Ball ball(window);
 
-    // const sf::Time framesPerSec = sf::seconds(0.001f);
-    // sf::Time totalTime = sf::Time::Zero;
-    // sf::Clock clock;
+    const sf::Time timePerFrame = sf::seconds(0.001f);
+    sf::Time totalTime = sf::Time::Zero;
+    sf::Clock clock;
 
     while (window.isOpen())
     {
@@ -30,8 +30,15 @@ int main()
         }
 
         window.clear();
+        
+        totalTime += clock.restart();
+        while (totalTime > timePerFrame)
+        {
+            totalTime -= timePerFrame;
+
+            ball.draw(timePerFrame);
+        }
         player.draw();
-        ball.draw();
         window.display();
     }
 }

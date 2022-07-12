@@ -12,5 +12,5 @@ class Ball
 public:
     Ball(sf::RenderWindow &window);
     void setRandomSpeed(int r, int R, int dir1, int dir2);
-    void draw();
+    void draw(sf::Time TimePerFrame);
 };
