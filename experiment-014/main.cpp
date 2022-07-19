@@ -24,7 +24,7 @@ int main()
     const int WindowWidth = window.getSize().x;
     const int WindowHeight = window.getSize().y;
 
-    const float SpeedValue = std::min(WindowWidth, WindowHeight) / 5;
+    const float SpeedValue = std::min(WindowWidth, WindowHeight);
 
     const sf::Time TimePerFrame = sf::seconds(0.01f);
     sf::Clock clock;

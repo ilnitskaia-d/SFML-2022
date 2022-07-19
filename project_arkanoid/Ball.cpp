@@ -1,11 +1,12 @@
 #include "Ball.hpp"
 #include "..\libs\random.hpp"
+#include <memory>
 
 using namespace std;
 using Random = effolkronium::random_static;
 
-Ball::Ball(sf::RenderWindow &window, Block &block, Player &player)
-    : mWindow(window), mBlock(block), mPlayer(player)
+Ball::Ball(sf::RenderWindow &window, vector<unique_ptr<Block>> &blocks, Player &player)
+    : mWindow(window), mBlocks(blocks), mPlayer(player)
 {
     mBall.setRadius(10);
     mBall.setOrigin(mBall.getRadius(), mBall.getRadius());
@@ -32,39 +33,42 @@ void Ball::move(float time)
     sf::Vector2f curPos = mBall.getPosition();
     sf::Vector2f newPos = curPos + mSpeed * time;
 
-    if (mBlock.getState() >= 0)
+    for (auto &block : mBlocks)
     {
-        if (mBlock.isBelow(curPos.x, curPos.y) && mBlock.inRect(newPos.x, newPos.y, mBall.getRadius()))
+        if (block->getState() >= 0)
         {
-            float excess = (mBlock.getPos().y + mBlock.getSize().y + mBall.getRadius()) - newPos.y;
-            newPos.y = (mBlock.getPos().y + mBlock.getSize().y + mBall.getRadius()) + excess;
-            mSpeed.y = -mSpeed.y;
-        }
-        else if (mBlock.isAbove(curPos.x, curPos.y) && mBlock.inRect(newPos.x, newPos.y, mBall.getRadius()))
-        {
-            float excess = newPos.y - (mBlock.getPos().y - mBall.getRadius());
-            newPos.y = (mBlock.getPos().y - mBall.getRadius()) - excess;
-            mSpeed.y = -mSpeed.y;
-        }
-        else if (mBlock.isLeft(curPos.x, curPos.y) && mBlock.inRect(newPos.x, newPos.y, mBall.getRadius()))
-        {
-            float excess = newPos.x - (mBlock.getPos().x - mBall.getRadius());
-            newPos.x = (mBlock.getPos().x - mBall.getRadius()) - excess;
-            mSpeed.x = -mSpeed.x;
-        }
-        else if (mBlock.isRight(curPos.x, curPos.y) && mBlock.inRect(newPos.x, newPos.y, mBall.getRadius()))
-        {
-            float excess = (mBlock.getPos().x + mBlock.getSize().x + mBall.getRadius()) - newPos.x;
-            newPos.x = (mBlock.getPos().x + mBlock.getSize().x + mBall.getRadius()) + excess;
-            mSpeed.x = -mSpeed.x;
-        }
-        else if (mBlock.inRect(newPos.x, newPos.y, mBall.getRadius()))
-        {
-            mSpeed.x = -mSpeed.x + Random::get(-1, 1);
-            mSpeed.y = -mSpeed.y + Random::get(-1, 1);
+            if (block->isBelow(curPos.x, curPos.y) && block->inRect(newPos.x, newPos.y, mBall.getRadius()))
+            {
+                float excess = (block->getPos().y + block->getSize().y + mBall.getRadius()) - newPos.y;
+                newPos.y = (block->getPos().y + block->getSize().y + mBall.getRadius()) + excess;
+                mSpeed.y = -mSpeed.y;
+            }
+            else if (block->isAbove(curPos.x, curPos.y) && block->inRect(newPos.x, newPos.y, mBall.getRadius()))
+            {
+                float excess = newPos.y - (block->getPos().y - mBall.getRadius());
+                newPos.y = (block->getPos().y - mBall.getRadius()) - excess;
+                mSpeed.y = -mSpeed.y;
+            }
+            else if (block->isLeft(curPos.x, curPos.y) && block->inRect(newPos.x, newPos.y, mBall.getRadius()))
+            {
+                float excess = newPos.x - (block->getPos().x - mBall.getRadius());
+                newPos.x = (block->getPos().x - mBall.getRadius()) - excess;
+                mSpeed.x = -mSpeed.x;
+            }
+            else if (block->isRight(curPos.x, curPos.y) && block->inRect(newPos.x, newPos.y, mBall.getRadius()))
+            {
+                float excess = (block->getPos().x + block->getSize().x + mBall.getRadius()) - newPos.x;
+                newPos.x = (block->getPos().x + block->getSize().x + mBall.getRadius()) + excess;
+                mSpeed.x = -mSpeed.x;
+            }
+            else if (block->inRect(newPos.x, newPos.y, mBall.getRadius()))
+            {
+                mSpeed.x = -mSpeed.x + Random::get(-1, 1);
+                mSpeed.y = -mSpeed.y + Random::get(-1, 1);
+            }
         }
     }
-
+    
     if (mPlayer.isBelow(curPos.x, curPos.y) && mPlayer.inRect(newPos.x, newPos.y, mBall.getRadius()))
     {
         float excess = (mPlayer.getPos().y + mPlayer.getSize().y + mBall.getRadius()) - newPos.y;

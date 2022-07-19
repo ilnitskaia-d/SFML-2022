@@ -3,7 +3,7 @@
 Block::Block(sf::RenderWindow &window)
     : mWindow(window)
 {
-    mBlock.setSize(sf::Vector2f(100, 100));
+    mBlock.setSize(sf::Vector2f(500, 300));
     mBlock.setFillColor(sf::Color::White);
     mBlock.setPosition(sf::Vector2f(mWindow.getSize().x / 2 - mBlock.getSize().x / 2, mWindow.getSize().y / 2 - mBlock.getSize().y));
 }

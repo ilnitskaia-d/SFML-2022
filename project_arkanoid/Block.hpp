@@ -8,7 +8,7 @@ class Block
     int curState;
 
 public:
-    Block(sf::RenderWindow &window);
+    Block(sf::RenderWindow &window, float x, float y, float w, float h);
     bool isBelow(float x, float y) const;
     bool isAbove(float x, float y) const;
     bool isLeft(float x, float y) const;

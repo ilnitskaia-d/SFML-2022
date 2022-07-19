@@ -7,7 +7,7 @@ using Random = effolkronium::random_static;
 Ball::Ball(sf::RenderWindow &window, Block &block)
     : mWindow(window), mBlock(block)
 {
-    mBall.setRadius(10);
+    mBall.setRadius(20);
     mBall.setOrigin(mBall.getRadius(), mBall.getRadius());
     mBall.setFillColor(sf::Color::Yellow);
     mBall.setPosition(sf::Vector2f(window.getSize().x / 2, window.getSize().y / 2));

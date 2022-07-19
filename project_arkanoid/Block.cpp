@@ -1,11 +1,13 @@
 #include "Block.hpp"
 
-Block::Block(sf::RenderWindow &window)
+Block::Block(sf::RenderWindow &window, float x, float y, float w, float h)
     : mWindow(window), curState(1)
 {
-    mBlock.setSize(sf::Vector2f(500, 300));
+    mBlock.setSize(sf::Vector2f(w, h));
+    mBlock.setOutlineColor(sf::Color::Black);
+    mBlock.setOutlineThickness(5);
     mBlock.setFillColor(sf::Color::White);
-    mBlock.setPosition(sf::Vector2f(mWindow.getSize().x / 2 - mBlock.getSize().x / 2, mWindow.getSize().y / 2 - mBlock.getSize().y));
+    mBlock.setPosition(sf::Vector2f(x, y));
 }
 
 bool Block::isBelow(float x, float y) const
