@@ -11,7 +11,7 @@ Ball::Ball(sf::RenderWindow &window, vector<unique_ptr<Block>> &blocks, Player &
     mBall.setRadius(10);
     mBall.setOrigin(mBall.getRadius(), mBall.getRadius());
     mBall.setFillColor(sf::Color::Yellow);
-    mBall.setPosition(sf::Vector2f(window.getSize().x / 2, window.getSize().y / 2 + 300));
+    mBall.setPosition(sf::Vector2f(mWindow.getSize().x / 2, mWindow.getSize().y / 2 + 300));
 
     float SpeedValue = std::min(mWindow.getSize().x, mWindow.getSize().y);
     float angle = Random::get(0.0f, 2 * 3.1415f);
@@ -68,7 +68,7 @@ void Ball::move(float time)
             }
         }
     }
-    
+
     if (mPlayer.isBelow(curPos.x, curPos.y) && mPlayer.inRect(newPos.x, newPos.y, mBall.getRadius()))
     {
         float excess = (mPlayer.getPos().y + mPlayer.getSize().y + mBall.getRadius()) - newPos.y;
@@ -103,9 +103,14 @@ void Ball::move(float time)
 
     if (mBall.getPosition().y > mWindow.getSize().y - mBall.getRadius())
     {
-        float excess = mBall.getPosition().y - (mWindow.getSize().y - mBall.getRadius());
-        mBall.setPosition(mBall.getPosition().x, mWindow.getSize().y - mBall.getRadius() - excess);
-        mSpeed.y = -mSpeed.y;
+        mBall.setPosition(sf::Vector2f(mWindow.getSize().x / 2, mWindow.getSize().y / 2 + 300));
+
+        float SpeedValue = std::min(mWindow.getSize().x, mWindow.getSize().y);
+        float angle = Random::get(0.0f, 2 * 3.1415f);
+        mSpeed = sf::Vector2f(SpeedValue * cos(angle), SpeedValue * sin(angle));
+        // float excess = mBall.getPosition().y - (mWindow.getSize().y - mBall.getRadius());
+        // mBall.setPosition(mBall.getPosition().x, mWindow.getSize().y - mBall.getRadius() - excess);
+        // mSpeed.y = -mSpeed.y;
     }
     else if (mBall.getPosition().y < mBall.getRadius())
     {
