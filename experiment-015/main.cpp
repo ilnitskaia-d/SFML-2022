@@ -67,10 +67,11 @@ public:
 
 int main()
 {
-    sf::RenderWindow window(sf::VideoMode::getDesktopMode(), "SFML app", sf::Style::Fullscreen);
+    // sf::RenderWindow window(sf::VideoMode::getDesktopMode(), "SFML app", sf::Style::Fullscreen);
+    sf::RenderWindow window(sf::VideoMode(800, 600), "SFML app");
     window.setVerticalSyncEnabled(true);
 
-    int n = 100;
+    int n = 10;
 
     std::vector<Star> stars;
     sf::RectangleShape rect(sf::Vector2f(window.getSize().x, window.getSize().y));

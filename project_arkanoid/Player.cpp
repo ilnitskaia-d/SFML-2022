@@ -11,6 +11,18 @@ Player::Player(sf::RenderWindow &window)
     mPlatform.setPosition(sf::Vector2f(window.getSize().x / 2, window.getSize().y - 30));
 }
 
+void Player::increaseSize(int n)
+{
+    mPlatform.setSize(sf::Vector2f(mPlatform.getSize().x + n, mPlatform.getSize().y));
+    mPlatform.setOrigin(sf::Vector2f(mPlatform.getSize().x / 2, mPlatform.getSize().y / 2));
+}
+
+void Player::restoreSize(int n)
+{
+    mPlatform.setSize(sf::Vector2f(mPlatform.getSize().x - n, mPlatform.getSize().y));
+    mPlatform.setOrigin(sf::Vector2f(mPlatform.getSize().x / 2, mPlatform.getSize().y / 2));
+}
+
 sf::Vector2f Player::getSize()
 {
     return mPlatform.getSize();

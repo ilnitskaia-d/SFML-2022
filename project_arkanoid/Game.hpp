@@ -7,6 +7,8 @@
 #include "Player.hpp"
 #include "Ball.hpp"
 
+class Block;
+
 class Game
 {
     sf::RenderWindow mWindow;
@@ -16,6 +18,8 @@ class Game
     Player mPlayer;
     Ball mBall;
     int mCurLevel;
+    sf::Time mTimeOfMagic;
+    void (*mPtrEndingMagic)(void *);
 
     bool loadLevels();
     bool checkLevel();
@@ -24,4 +28,16 @@ class Game
 public:
     Game();
     void run();
+    void increaseRacketSize();
+    void restoreRacketSize();
+
+    void setPtrEndingMagic(void *ptr)
+    {
+        mPtrEndingMagic = reinterpret_cast<void (*)(void *)>(ptr);
+    }
+
+    void setMagicDuration(int timeOfMagic)
+    {
+        mTimeOfMagic = sf::seconds(timeOfMagic);
+    }
 };

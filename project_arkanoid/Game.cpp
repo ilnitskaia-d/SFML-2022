@@ -9,12 +9,33 @@
 #include <math.h>
 #include <fstream>
 #include <sstream>
+#include <vector>
 
 using Random = effolkronium::random_static;
 
+namespace
+{
+    void increaseRacketSize(void *ptr, void *ptr2)
+    {
+        Game *ptrToGame = reinterpret_cast<Game *>(ptr);
+        ptrToGame->increaseRacketSize();
+        ptrToGame->setMagicDuration(30);
+        ptrToGame->setPtrEndingMagic(ptr2);
+    }
+
+    void restoreRacketSize(void *ptr)
+    {
+        Game *ptrToGame = reinterpret_cast<Game *>(ptr);
+        ptrToGame->restoreRacketSize();
+    }
+
+    std::vector<void (*)(void *, void *)> startingMagic = {nullptr, increaseRacketSize};
+    std::vector<void (*)(void *)> endingMagic = {nullptr, restoreRacketSize};
+}
+
 Game::Game()
     : mWindow(sf::VideoMode::getDesktopMode(), "SFML app", sf::Style::Fullscreen), mPlayer(mWindow),
-      mBall(mWindow, mBlocks, mPlayer), mCurLevel(0)
+      mBall(mWindow, mBlocks, mPlayer), mCurLevel(0), mTimeOfMagic(sf::seconds(0))
 {
     loadLevels();
     loadBlocks(mCurLevel);
@@ -24,13 +45,21 @@ void Game::loadBlocks(int level)
 {
     float w = mWindow.getSize().x / mLevels[level][0].size();
     float h = mWindow.getSize().y / mLevels[0].size();
-    for (int j = 0; j < mLevels[level].size(); j++)
+    for (size_t j = 0; j < mLevels[level].size(); j++)
     {
-        for (int i = 0; i < mLevels[level][j].size(); i++)
+        for (size_t i = 0; i < mLevels[level][j].size(); i++)
         {
-            if (mLevels[level][j][i] == 'A')
+            if (isalpha(mLevels[level][j][i]))
             {
-                mBlocks.push_back(std::make_unique<Block>(mWindow, i * w + 5, j * h + 5, w, h));
+                size_t index = mLevels[level][j][i] - 'A';
+                mBlocks.push_back(std::make_unique<Block>(
+                    this,
+                    mWindow,
+                    i * w + 5,
+                    j * h + 5,
+                    w,
+                    h,
+                    startingMagic[index], endingMagic[index]));
             }
         }
     }
@@ -66,7 +95,7 @@ bool Game::loadLevels()
         }
 
         std::vector<std::string> curLevel;
-        for (int i = 0; i < h; i++)
+        for (int i = 0; i < int(h); i++)
         {
             if (!std::getline(level, line))
             {
@@ -76,15 +105,6 @@ bool Game::loadLevels()
         }
 
         mLevels.push_back(curLevel);
-    }
-
-    for (int nLevel = 0; nLevel < mLevels.size(); nLevel++)
-    {
-        for (int j = 0; j < mLevels[nLevel].size(); j++)
-        {
-            std::cout << mLevels[nLevel][j] << std::endl;
-        }
-        std::cout << std::endl;
     }
 
     return true;
@@ -124,6 +144,14 @@ void Game::run()
         {
             totalTime -= TimePerFrame;
             mBall.move(TimePerFrame.asSeconds());
+            if (mTimeOfMagic > sf::seconds(0))
+            {
+                mTimeOfMagic -= TimePerFrame;
+                if (mTimeOfMagic <= sf::seconds(0))
+                {
+                    mPtrEndingMagic(this);
+                }
+            }
         }
 
         mPlayer.move();
@@ -136,7 +164,7 @@ void Game::run()
 
         if (!checkLevel())
         {
-            if (mCurLevel < mLevels.size() - 1)
+            if (mCurLevel < int(mLevels.size()) - 1)
             {
                 mCurLevel++;
                 loadBlocks(mCurLevel);
@@ -147,4 +175,14 @@ void Game::run()
         mBall.draw();
         mWindow.display();
     }
+}
+
+void Game::increaseRacketSize()
+{
+    mPlayer.increaseSize(mPlayer.getSize().x / 2);
+}
+
+void Game::restoreRacketSize()
+{
+    mPlayer.restoreSize(mPlayer.getSize().x / 2);
 }

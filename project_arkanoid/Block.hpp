@@ -3,12 +3,15 @@
 
 class Block
 {
+    void *mPtrToGame;
     sf::RenderWindow &mWindow;
     sf::RectangleShape mBlock;
-    int curState;
+    int mCurState;
+    void (*mPtrMagic)(void *, void *);
+    void (*mPtrEndMagic)(void *);
 
 public:
-    Block(sf::RenderWindow &window, float x, float y, float w, float h);
+    Block(void *ptrToGame, sf::RenderWindow &window, float x, float y, float w, float h, void magic(void *, void *), void endMagic(void *));
     bool isBelow(float x, float y) const;
     bool isAbove(float x, float y) const;
     bool isLeft(float x, float y) const;

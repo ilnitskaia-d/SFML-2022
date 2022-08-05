@@ -9,6 +9,8 @@ class Player
 public:
     Player(sf::RenderWindow &window);
 
+    void increaseSize(int n);
+    void restoreSize(int n);
     sf::Vector2f getSize();
     sf::Vector2f getPos();
     void draw();
