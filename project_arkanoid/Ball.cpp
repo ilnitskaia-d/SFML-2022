@@ -1,19 +1,24 @@
 #include "Ball.hpp"
 #include "..\libs\random.hpp"
+#include "Title.hpp"
 #include <memory>
 
 using namespace std;
 using Random = effolkronium::random_static;
 
-Ball::Ball(sf::RenderWindow &window, vector<unique_ptr<Block>> &blocks, Player &player)
-    : mWindow(window), mBlocks(blocks), mPlayer(player)
+Ball::Ball(sf::RenderWindow &window, vector<unique_ptr<Block>> &blocks, Player &player, Title &title)
+    : mWindow(window), mBlocks(blocks), mPlayer(player), mTitle(title)
 {
+    sf::Font font;
+    font.loadFromFile("data/font.TTF");
+    mTitle.setFont(font);
+
     mBall.setRadius(10);
     mBall.setOrigin(mBall.getRadius(), mBall.getRadius());
     mBall.setFillColor(sf::Color::Yellow);
     mBall.setPosition(sf::Vector2f(mWindow.getSize().x / 2, mWindow.getSize().y / 2 + 300));
 
-    float SpeedValue = std::min(mWindow.getSize().x, mWindow.getSize().y);
+    float SpeedValue = mWindow.getSize().x / 5;
     float angle = Random::get(0.0f, 2 * 3.1415f);
     mSpeed = sf::Vector2f(SpeedValue * cos(angle), SpeedValue * sin(angle));
 }
@@ -35,6 +40,7 @@ void Ball::move(float time)
 
     for (auto &block : mBlocks)
     {
+        bool hit = false;
         if (block->getState() >= 0)
         {
             if (block->isBelow(curPos.x, curPos.y) && block->inRect(newPos.x, newPos.y, mBall.getRadius()))
@@ -42,56 +48,68 @@ void Ball::move(float time)
                 float excess = (block->getPos().y + block->getSize().y + mBall.getRadius()) - newPos.y;
                 newPos.y = (block->getPos().y + block->getSize().y + mBall.getRadius()) + excess;
                 mSpeed.y = -mSpeed.y;
+                hit = true;
             }
             else if (block->isAbove(curPos.x, curPos.y) && block->inRect(newPos.x, newPos.y, mBall.getRadius()))
             {
                 float excess = newPos.y - (block->getPos().y - mBall.getRadius());
                 newPos.y = (block->getPos().y - mBall.getRadius()) - excess;
                 mSpeed.y = -mSpeed.y;
+                hit = true;
             }
             else if (block->isLeft(curPos.x, curPos.y) && block->inRect(newPos.x, newPos.y, mBall.getRadius()))
             {
                 float excess = newPos.x - (block->getPos().x - mBall.getRadius());
                 newPos.x = (block->getPos().x - mBall.getRadius()) - excess;
                 mSpeed.x = -mSpeed.x;
+                hit = true;
             }
             else if (block->isRight(curPos.x, curPos.y) && block->inRect(newPos.x, newPos.y, mBall.getRadius()))
             {
                 float excess = (block->getPos().x + block->getSize().x + mBall.getRadius()) - newPos.x;
                 newPos.x = (block->getPos().x + block->getSize().x + mBall.getRadius()) + excess;
                 mSpeed.x = -mSpeed.x;
+                hit = true;
             }
             else if (block->inRect(newPos.x, newPos.y, mBall.getRadius()))
             {
                 mSpeed.x = -mSpeed.x + Random::get(-1, 1);
                 mSpeed.y = -mSpeed.y + Random::get(-1, 1);
+                hit = true;
+            }
+
+            if (hit)
+            {
+                mTitle.mScore += 10;
             }
         }
     }
 
+    float speedVal = std::min(mWindow.getSize().x, mWindow.getSize().y);
+    float ang = Random::get(0.0f, 3.1415f);
     if (mPlayer.isBelow(curPos.x, curPos.y) && mPlayer.inRect(newPos.x, newPos.y, mBall.getRadius()))
     {
         float excess = (mPlayer.getPos().y + mPlayer.getSize().y + mBall.getRadius()) - newPos.y;
         newPos.y = (mPlayer.getPos().y + mPlayer.getSize().y + mBall.getRadius()) + excess;
-        mSpeed.y = -mSpeed.y;
+        mSpeed.y = -(speedVal * sin(ang));
     }
     else if (mPlayer.isAbove(curPos.x, curPos.y) && mPlayer.inRect(newPos.x, newPos.y, mBall.getRadius()))
     {
         float excess = newPos.y - (mPlayer.getPos().y - mBall.getRadius());
         newPos.y = (mPlayer.getPos().y - mBall.getRadius()) - excess;
-        mSpeed.y = -mSpeed.y;
+        mSpeed.y = -(speedVal * sin(ang));
     }
     else if (mPlayer.isLeft(curPos.x, curPos.y) && mPlayer.inRect(newPos.x, newPos.y, mBall.getRadius()))
     {
         float excess = newPos.x - (mPlayer.getPos().x - mBall.getRadius());
         newPos.x = (mPlayer.getPos().x - mBall.getRadius()) - excess;
-        mSpeed.x = -mSpeed.x;
+        mSpeed.y = -(speedVal * sin(ang));
     }
     else if (mPlayer.isRight(curPos.x, curPos.y) && mPlayer.inRect(newPos.x, newPos.y, mBall.getRadius()))
     {
         float excess = (mPlayer.getPos().x + mPlayer.getSize().x + mBall.getRadius()) - newPos.x;
         newPos.x = (mPlayer.getPos().x + mPlayer.getSize().x + mBall.getRadius()) + excess;
-        mSpeed.x = -mSpeed.x;
+        mSpeed.y = -(speedVal * sin(ang));
     }
     else if (mPlayer.inRect(newPos.x, newPos.y, mBall.getRadius()))
     {
@@ -108,9 +126,6 @@ void Ball::move(float time)
         float SpeedValue = std::min(mWindow.getSize().x, mWindow.getSize().y);
         float angle = Random::get(0.0f, 2 * 3.1415f);
         mSpeed = sf::Vector2f(SpeedValue * cos(angle), SpeedValue * sin(angle));
-        // float excess = mBall.getPosition().y - (mWindow.getSize().y - mBall.getRadius());
-        // mBall.setPosition(mBall.getPosition().x, mWindow.getSize().y - mBall.getRadius() - excess);
-        // mSpeed.y = -mSpeed.y;
     }
     else if (mBall.getPosition().y < mBall.getRadius())
     {

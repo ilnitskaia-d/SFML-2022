@@ -6,6 +6,7 @@
 #include "Block.hpp"
 #include "Player.hpp"
 #include "Ball.hpp"
+#include "Title.hpp"
 
 class Block;
 
@@ -16,6 +17,7 @@ class Game
     std::vector<std::string> mTitles;
     std::vector<std::unique_ptr<Block>> mBlocks;
     Player mPlayer;
+    Title mTitle;
     Ball mBall;
     int mCurLevel;
     sf::Time mTimeOfMagic;

@@ -1,10 +1,12 @@
 #include "Game.hpp"
 #include "../libs/random.hpp"
-#include <algorithm>
-#include <iostream>
 #include "Ball.hpp"
 #include "Block.hpp"
 #include "Player.hpp"
+#include "Title.hpp"
+
+#include <algorithm>
+#include <iostream>
 #include <memory>
 #include <math.h>
 #include <fstream>
@@ -35,7 +37,7 @@ namespace
 
 Game::Game()
     : mWindow(sf::VideoMode::getDesktopMode(), "SFML app", sf::Style::Fullscreen), mPlayer(mWindow),
-      mBall(mWindow, mBlocks, mPlayer), mCurLevel(0), mTimeOfMagic(sf::seconds(0))
+      mTitle(mWindow), mBall(mWindow, mBlocks, mPlayer, mTitle), mCurLevel(0), mTimeOfMagic(sf::seconds(0))
 {
     loadLevels();
     loadBlocks(mCurLevel);
@@ -67,7 +69,7 @@ void Game::loadBlocks(int level)
 
 bool Game::loadLevels()
 {
-    std::fstream level("levels.data");
+    std::fstream level("data/levels.data");
     if (!level)
     {
         std::cout << "file not found" << std::endl;
@@ -171,6 +173,7 @@ void Game::run()
             }
         }
 
+        mTitle.draw();
         mPlayer.draw();
         mBall.draw();
         mWindow.display();
