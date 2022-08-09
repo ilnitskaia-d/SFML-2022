@@ -1,18 +1,15 @@
 #include "Ball.hpp"
 #include "..\libs\random.hpp"
 #include "Title.hpp"
+#include <iostream>
 #include <memory>
 
 using namespace std;
 using Random = effolkronium::random_static;
 
-Ball::Ball(sf::RenderWindow &window, vector<unique_ptr<Block>> &blocks, Player &player, Title &title)
-    : mWindow(window), mBlocks(blocks), mPlayer(player), mTitle(title)
+Ball::Ball(sf::RenderWindow &window, vector<unique_ptr<Block>> &blocks, Player &player)
+    : mWindow(window), mBlocks(blocks), mPlayer(player)
 {
-    sf::Font font;
-    font.loadFromFile("data/font.TTF");
-    mTitle.setFont(font);
-
     mBall.setRadius(10);
     mBall.setOrigin(mBall.getRadius(), mBall.getRadius());
     mBall.setFillColor(sf::Color::Yellow);
@@ -80,7 +77,7 @@ void Ball::move(float time)
 
             if (hit)
             {
-                mTitle.mScore += 10;
+                // mTitle.mScore += 10;
             }
         }
     }

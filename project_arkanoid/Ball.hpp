@@ -12,10 +12,9 @@ class Ball
     std::vector<std::unique_ptr<Block>> &mBlocks;
     Player &mPlayer;
     sf::Vector2f mSpeed;
-    Title &mTitle;
 
 public:
-    Ball(sf::RenderWindow &window, std::vector<std::unique_ptr<Block>> &blocks, Player &player, Title &title);
+    Ball(sf::RenderWindow &window, std::vector<std::unique_ptr<Block>> &blocks, Player &player);
     sf::Vector2f getPos();
     void draw();
     void move(float time);

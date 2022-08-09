@@ -17,7 +17,7 @@ class Game
     std::vector<std::string> mTitles;
     std::vector<std::unique_ptr<Block>> mBlocks;
     Player mPlayer;
-    Title mTitle;
+    // Title mTitle;
     Ball mBall;
     int mCurLevel;
     sf::Time mTimeOfMagic;

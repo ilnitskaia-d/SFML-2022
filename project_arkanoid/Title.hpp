@@ -1,5 +1,6 @@
 #pragma once
 #include <SFML/Graphics.hpp>
+#include <iostream>
 #include <vector>
 
 class Title
@@ -11,10 +12,12 @@ class Title
 public:
     int mScore;
     int mLives;
-    
+
     Title(sf::RenderWindow &window)
         : mWindow(window), mScore(0), mLives(3)
     {
+
+        std::cout << "-----------works----------" << std::endl;
         mScoreText.setString(std::to_string(mScore));
         mScoreText.setCharacterSize(50);
         mScoreText.setFillColor(sf::Color::White);

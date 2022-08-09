@@ -36,9 +36,9 @@ namespace
 }
 
 Game::Game()
-    : mWindow(sf::VideoMode::getDesktopMode(), "SFML app", sf::Style::Fullscreen), mPlayer(mWindow),
-      mTitle(mWindow), mBall(mWindow, mBlocks, mPlayer, mTitle), mCurLevel(0), mTimeOfMagic(sf::seconds(0))
+    : mWindow(sf::VideoMode::getDesktopMode(), "SFML app", sf::Style::Fullscreen), mPlayer(mWindow), mBall(mWindow, mBlocks, mPlayer), mCurLevel(0), mTimeOfMagic(sf::seconds(0))
 {
+    mWindow.setMouseCursorVisible(false);
     loadLevels();
     loadBlocks(mCurLevel);
 }
@@ -173,7 +173,7 @@ void Game::run()
             }
         }
 
-        mTitle.draw();
+        // mTitle.draw();
         mPlayer.draw();
         mBall.draw();
         mWindow.display();
