@@ -73,7 +73,6 @@ public:
         case goDown:
             mAnimationIndex = 0;
             break;
-
         default:
             break;
         }

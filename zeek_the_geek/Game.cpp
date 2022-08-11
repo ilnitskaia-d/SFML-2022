@@ -19,6 +19,10 @@ void Game::run()
             {
                 mWindow.close();
             }
+            else
+            {
+                mCharacter.move();
+            }
         }
 
         mWindow.clear();
