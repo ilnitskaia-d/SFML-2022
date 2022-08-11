@@ -2,15 +2,16 @@
 
 #include <SFML/Graphics.hpp>
 #include <memory>
-#include "GameObj.hpp"
+
 #include "MainCharacter.hpp"
+#include "Field.hpp"
 
 using namespace std;
 
 class Game
 {
     sf::RenderWindow mWindow;
-    vector<unique_ptr<GameObj>> mField;
+    Field mField;
     MainCharacter mCharacter;
 
 public:

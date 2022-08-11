@@ -1,8 +1,8 @@
 #include "MainCharacter.hpp"
 #include <iostream>
 
-MainCharacter::MainCharacter(sf::RenderWindow &window, float x, float y)
-    : GameObj(window, x, y), mAnimationIndex(0), mFrameIndex(0)
+MainCharacter::MainCharacter(sf::RenderWindow &window, Field &field, float x, float y)
+    : mWindow(window), mField(field), mCoords(sf::Vector2f(x, y)), mCounter(0), mAnimationIndex(0), mFrameIndex(0), curState(State::standDown), mDirection(sf::Vector2f(0.0f, 0.0f))
 {
     if (!mTexture.loadFromFile("data/cat.png"))
     {
@@ -36,33 +36,15 @@ void MainCharacter::draw()
         {
             mCounter = 0;
             mFrameIndex = (mFrameIndex + 1) % mSprites[mAnimationIndex].size();
+            mCoords += mDirection;
         }
     }
 }
+
 void MainCharacter::move()
 {
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left) && curState != State::goLeft)
-    {
-        curState = State::goLeft;
-        mAnimationIndex = 1;
-    }
-    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right) && curState != State::goRight)
-    {
-        curState = State::goRight;
-        mAnimationIndex = 2;
-    }
-    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up) && curState != State::goUp)
-    {
-        curState = State::goUp;
-        mAnimationIndex = 3;
-    }
-    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down) && curState != State::goDown)
-    {
-        curState = State::goDown;
-        mAnimationIndex = 0;
-    }
-    else if (!sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left) && !sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right) &&
-             !sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up) && !sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down))
+    if (!sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left) && !sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right) &&
+        !sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up) && !sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down))
     {
         mFrameIndex = 0;
         if (curState == State::goLeft)
@@ -81,5 +63,34 @@ void MainCharacter::move()
         {
             curState = State::standDown;
         }
+        return;
+    }
+    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left) && curState != State::goLeft)
+    {
+        curState = State::goLeft;
+        mDirection.x = -5;
+        mDirection.y = 0;
+        mAnimationIndex = 1;
+    }
+    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right) && curState != State::goRight)
+    {
+        curState = State::goRight;
+        mDirection.x = 5;
+        mDirection.y = 0;
+        mAnimationIndex = 2;
+    }
+    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up) && curState != State::goUp)
+    {
+        curState = State::goUp;
+        mDirection.x = 0;
+        mDirection.y = -5;
+        mAnimationIndex = 3;
+    }
+    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down) && curState != State::goDown)
+    {
+        curState = State::goDown;
+        mDirection.x = 0;
+        mDirection.y = 5;
+        mAnimationIndex = 0;
     }
 }

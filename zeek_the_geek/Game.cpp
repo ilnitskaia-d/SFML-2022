@@ -1,9 +1,8 @@
 #include "Game.hpp"
-#include "GameObj.hpp"
 #include "MainCharacter.hpp"
 
 Game::Game()
-    : mWindow(sf::VideoMode::getDesktopMode(), "SFML app", sf::Style::Fullscreen), mCharacter(mWindow, mWindow.getSize().x / 2.0f, mWindow.getSize().y / 2.0f)
+    : mWindow(sf::VideoMode::getDesktopMode(), "SFML app", sf::Style::Fullscreen), mField(mWindow), mCharacter(mWindow, mField, mWindow.getSize().x / 2.0f, mWindow.getSize().y / 2.0f)
 {
     mWindow.setVerticalSyncEnabled(true);
 }
@@ -26,6 +25,7 @@ void Game::run()
         }
 
         mWindow.clear();
+        mField.draw();
         mCharacter.draw();
         mWindow.display();
     }
