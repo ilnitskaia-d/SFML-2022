@@ -25,18 +25,17 @@ class MainCharacter
     vector<vector<unique_ptr<sf::Sprite>>> mSprites;
 
     sf::RenderWindow &mWindow;
-    Field &mField;
     sf::Vector2f mCoords;
-    
+
     int mCounter;
     size_t mAnimationIndex;
     size_t mFrameIndex;
-    
+
     State curState;
     sf::Vector2f mDirection;
 
 public:
-    MainCharacter(sf::RenderWindow &window, Field &field, float x, float y);
+    MainCharacter(sf::RenderWindow &window, float x, float y);
 
     void move();
     void draw();

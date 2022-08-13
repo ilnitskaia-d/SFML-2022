@@ -1,8 +1,8 @@
 #include "MainCharacter.hpp"
 #include <iostream>
 
-MainCharacter::MainCharacter(sf::RenderWindow &window, Field &field, float x, float y)
-    : mWindow(window), mField(field), mCoords(sf::Vector2f(x, y)), mCounter(0), mAnimationIndex(0), mFrameIndex(0), curState(State::standDown), mDirection(sf::Vector2f(0.0f, 0.0f))
+MainCharacter::MainCharacter(sf::RenderWindow &window, float x, float y)
+    : mWindow(window), mCoords(sf::Vector2f(x, y)), mCounter(0), mAnimationIndex(0), mFrameIndex(0), curState(State::standDown), mDirection(sf::Vector2f(0.0f, 0.0f))
 {
     if (!mTexture.loadFromFile("data/cat.png"))
     {
@@ -19,7 +19,7 @@ MainCharacter::MainCharacter(sf::RenderWindow &window, Field &field, float x, fl
         for (int j = 0; j < 4; ++j)
         {
             mSprites[i].push_back(make_unique<sf::Sprite>(mTexture, sf::IntRect(j * frameW, i * frameH, frameW, frameH)));
-            mSprites[i].back()->setScale(6, 6);
+            mSprites[i].back()->setScale(4, 4);
         }
     }
 }
@@ -32,11 +32,10 @@ void MainCharacter::draw()
     if (curState == State::goLeft || curState == State::goRight || curState == State::goUp || curState == State::goDown)
     {
         ++mCounter;
-        if (mCounter == 20)
+        if (mCounter == 10)
         {
             mCounter = 0;
             mFrameIndex = (mFrameIndex + 1) % mSprites[mAnimationIndex].size();
-            mCoords += mDirection;
         }
     }
 }
@@ -93,4 +92,5 @@ void MainCharacter::move()
         mDirection.y = 5;
         mAnimationIndex = 0;
     }
+    mCoords += mDirection;
 }

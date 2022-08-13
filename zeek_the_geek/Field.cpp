@@ -84,7 +84,7 @@ void Field::loadTiles(size_t level)
             {
                 mField.push_back(make_unique<sf::Sprite>(mFloorTexture));
             }
-            mField.back()->scale(6, 6);
+            mField.back()->scale(4, 4);
             mField.back()->setPosition(sf::Vector2f(i * mField.back()->getGlobalBounds().height, j * mField.back()->getGlobalBounds().height));
         }
     }
