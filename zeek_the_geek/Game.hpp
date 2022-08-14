@@ -4,8 +4,7 @@
 #include <memory>
 #include <iostream>
 
-#include "MainCharacter.hpp"
-#include "Field.hpp"
+// #include "MainCharacter.hpp"
 
 using namespace std;
 
@@ -26,15 +25,38 @@ class Game
         GameObject(Game &game, const string &path, int r, int c);
 
         virtual void draw() = 0;
-        void info() const
+        virtual float getX()
         {
-            cout << "(" << mRow << " " << mCol << ") (" << mX << " " << mY << ")" << endl;
+            return mX;
         }
+
+        virtual float getY()
+        {
+            return mY;
+        }
+
+        virtual float getSize()
+        {
+            return mSprite.getGlobalBounds().width;
+        }
+
+        virtual bool cantMove(float x, float y, float size)
+        {
+            return (mX - mSprite.getGlobalBounds().width / 2.0f < size + x && x - size < mX + mSprite.getGlobalBounds().width / 2.0f &&
+                    mY - mSprite.getGlobalBounds().height / 2.0f < y + size && y - size < mY + mSprite.getGlobalBounds().height / 2.0f);
+        };
     };
 
     struct IMovable
     {
         virtual bool move(int dx, int dy) = 0;
+    };
+
+    class Wall : public GameObject
+    {
+    public:
+        Wall(Game &game, const string &path, int r, int c);
+        void draw() override;
     };
 
     class Flower : public GameObject
@@ -60,14 +82,50 @@ class Game
         bool move(int dx, int dy) override;
     };
 
+    class MainCharacter
+    {
+        enum State
+        {
+            goLeft,
+            goRight,
+            goUp,
+            goDown,
+            standLeft,
+            standRight,
+            standUp,
+            standDown,
+        };
+
+        sf::Texture mTexture;
+        vector<vector<unique_ptr<sf::Sprite>>> mSprites;
+
+        Game &mGame;
+        sf::Vector2f mCoords;
+
+        int mCounter;
+        size_t mAnimationIndex;
+        size_t mFrameIndex;
+
+        State curState;
+        sf::Vector2f mDirection;
+
+    public:
+        MainCharacter(Game &game);
+
+        void move();
+        void draw();
+        void setCoords(int row, int col);
+    };
+
+private:
     sf::RenderWindow mWindow;
-    Field mField;
     MainCharacter mCharacter;
     vector<vector<string>> mLevels;
     vector<vector<unique_ptr<GameObject>>> mGameObjects;
 
     bool loadLevels();
     void loadTiles(size_t level);
+
 public:
     Game();
     void run();
