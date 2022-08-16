@@ -25,14 +25,15 @@ class Game
         GameObject(Game &game, const string &path, int r, int c);
 
         virtual void draw() = 0;
-        virtual float getX()
+
+        virtual float getRow()
         {
-            return mX;
+            return mRow;
         }
 
-        virtual float getY()
+        virtual float getCol()
         {
-            return mY;
+            return mCol;
         }
 
         virtual float getSize()
@@ -50,6 +51,14 @@ class Game
     struct IMovable
     {
         virtual bool move(int dx, int dy) = 0;
+        virtual bool checkTiles(float x, float y) = 0;
+    };
+
+    class Floor : public GameObject
+    {
+    public:
+        Floor(Game &game, const string &path, int r, int c);
+        void draw() override;
     };
 
     class Wall : public GameObject
@@ -71,6 +80,7 @@ class Game
     public:
         Apple(Game &game, const string &path, int r, int c);
         void draw() override;
+        bool checkTiles(float x, float y) override;
         bool move(int dx, int dy) override;
     };
 
@@ -79,6 +89,7 @@ class Game
     public:
         Ball(Game &game, const string &path, int r, int c);
         void draw() override;
+        bool checkTiles(float x, float y) override;
         bool move(int dx, int dy) override;
     };
 

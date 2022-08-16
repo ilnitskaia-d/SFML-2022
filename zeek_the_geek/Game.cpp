@@ -81,6 +81,10 @@ void Game::loadTiles(size_t level)
             {
                 mCharacter.setCoords(i, j);
             }
+            else
+            {
+                mGameObjects[j].push_back(make_unique<Floor>(*this, "data/floor_0.png", i, j));
+            }
             // else if (mLevels[level][j][i] == 'B')
             // {
             //     mGameObjects[j].push_back(make_unique<Ball>(*this, "data/ball.png", j, i));
@@ -132,6 +136,16 @@ Game::GameObject::GameObject(Game &game, const string &path, int r, int c)
     mSprite.setPosition(sf::Vector2f(mX, mY));
 }
 
+Game::Floor::Floor(Game &game, const string &path, int r, int c)
+    : GameObject(game, path, r, c)
+{
+}
+
+void Game::Floor::draw()
+{
+    mGame.mWindow.draw(mSprite);
+}
+
 Game::Wall::Wall(Game &game, const string &path, int r, int c)
     : GameObject(game, path, r, c)
 {
@@ -162,11 +176,19 @@ void Game::Apple::draw()
     mGame.mWindow.draw(mSprite);
 }
 
+bool Game::Apple::checkTiles(float x, float y)
+{   
+    return true;
+}
+
 bool Game::Apple::move(int dx, int dy)
 {
     mX += dx;
     mY += dy;
     mSprite.setPosition(mX, mY);
+    mRow = (mX - (mGame.mWindow.getSize().x / 2.0f - mSprite.getGlobalBounds().width * (mGame.mLevels[0][0].size() / 2.0f))) / mSprite.getGlobalBounds().width;
+    mCol = (mY - (mGame.mWindow.getSize().y / 2.0f - mSprite.getGlobalBounds().height * (mGame.mLevels[0].size() / 2.0f))) / mSprite.getGlobalBounds().height;
+    cout << mRow << " " << mCol << endl;
     return true;
 }
 
@@ -180,10 +202,19 @@ void Game::Ball::draw()
     mGame.mWindow.draw(mSprite);
 }
 
+bool Game::Ball::checkTiles(float x, float y)
+{
+    x /= 5;
+    y /= 5;
+    return mGame.mLevels[0][mRow + y][mCol + x] == '.';
+}
+
 bool Game::Ball::move(int dx, int dy)
 {
     mX += dx;
     mY += dy;
+    mSprite.setPosition(mX, mY);
+    mRow = (mX - (mGame.mWindow.getSize().x / 2.0f - mSprite.getGlobalBounds().width * (mGame.mLevels[0][0].size() / 2.0f))) / mSprite.getGlobalBounds().width;
     return true;
 }
 
@@ -299,11 +330,25 @@ void Game::MainCharacter::move()
             {
                 if (auto p1 = dynamic_cast<Apple *>(p.get()))
                 {
-                    p1->move(mDirection.x, mDirection.y);
+                    if (p1->checkTiles(mDirection.x, mDirection.y))
+                    {
+                        p1->move(mDirection.x, mDirection.y);
+                    }
+                    else
+                    {
+                        canMove = false;
+                    }
                 }
                 else if (auto p2 = dynamic_cast<Ball *>(p.get()))
                 {
-                    p2->move(mDirection.x, mDirection.y);
+                    if (p2->checkTiles(mDirection.x, mDirection.y))
+                    {
+                        p2->move(mDirection.x, mDirection.y);
+                    }
+                    else
+                    {
+                        canMove = false;
+                    }
                 }
                 else
                 {
