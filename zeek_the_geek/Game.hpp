@@ -50,14 +50,13 @@ class Game
 
     struct IMovable
     {
-        virtual bool move(int dx, int dy) = 0;
-        virtual bool checkTiles(float x, float y) = 0;
+        virtual bool move() = 0;
     };
 
-    class Floor : public GameObject
+    class EmptyCell : public GameObject
     {
     public:
-        Floor(Game &game, const string &path, int r, int c);
+        EmptyCell(Game &game, const string &path, int r, int c);
         void draw() override;
     };
 
@@ -77,11 +76,23 @@ class Game
 
     class Apple : public GameObject, IMovable
     {
+        enum State
+        {
+            moving,
+            stand
+        };
+
+        State curState;
+        sf::Vector2f mDirection;
+        const int MaxCount = 10;
+        int mNumOfSteps;
+        int mDistOfSteps;
+
     public:
         Apple(Game &game, const string &path, int r, int c);
         void draw() override;
-        bool checkTiles(float x, float y) override;
-        bool move(int dx, int dy) override;
+        void startMove(int dr, int dc);
+        bool move() override;
     };
 
     class Ball : public GameObject, IMovable
@@ -89,8 +100,7 @@ class Game
     public:
         Ball(Game &game, const string &path, int r, int c);
         void draw() override;
-        bool checkTiles(float x, float y) override;
-        bool move(int dx, int dy) override;
+        bool move() override;
     };
 
     class MainCharacter
@@ -112,6 +122,8 @@ class Game
 
         Game &mGame;
         sf::Vector2f mCoords;
+        int mRow;
+        int mCol;
 
         int mCounter;
         size_t mAnimationIndex;
@@ -119,10 +131,14 @@ class Game
 
         State curState;
         sf::Vector2f mDirection;
+        const int MaxCount = 10;
+        int mNumOfSteps;
+        int mDistOfSteps;
 
     public:
         MainCharacter(Game &game);
 
+        bool canMove(int dr, int dc) const;
         void move();
         void draw();
         void setCoords(int row, int col);
@@ -133,6 +149,7 @@ private:
     MainCharacter mCharacter;
     vector<vector<string>> mLevels;
     vector<vector<unique_ptr<GameObject>>> mGameObjects;
+    float mCellSize;
 
     bool loadLevels();
     void loadTiles(size_t level);

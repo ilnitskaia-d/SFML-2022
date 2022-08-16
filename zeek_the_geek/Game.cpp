@@ -16,7 +16,10 @@ Game::Game()
         cout << "can't read from file" << endl;
         exit(1);
     }
+
     loadTiles(0);
+
+    mCellSize = mGameObjects[0][0]->getSize();
 }
 
 bool Game::loadLevels()
@@ -75,20 +78,18 @@ void Game::loadTiles(size_t level)
             }
             else if (mLevels[level][j][i] == 'W')
             {
-                mGameObjects[j].push_back(make_unique<Flower>(*this, "data/wall_0.png", i, j));
+                mGameObjects[j].push_back(make_unique<Wall>(*this, "data/wall_0.png", i, j));
             }
             else if (mLevels[level][j][i] == 'C')
             {
+                mGameObjects[j].push_back(nullptr);
                 mCharacter.setCoords(i, j);
+                mLevels[level][j][i] = '.';
             }
             else
             {
-                mGameObjects[j].push_back(make_unique<Floor>(*this, "data/floor_0.png", i, j));
+                mGameObjects[j].push_back(nullptr);
             }
-            // else if (mLevels[level][j][i] == 'B')
-            // {
-            //     mGameObjects[j].push_back(make_unique<Ball>(*this, "data/ball.png", j, i));
-            // }
         }
     }
 }
@@ -104,19 +105,17 @@ void Game::run()
             {
                 mWindow.close();
             }
-            else
-            {
-                mCharacter.move();
-            }
         }
 
         mWindow.clear();
-        // mField.draw();
         for (const auto &v : mGameObjects)
         {
             for (const auto &p : v)
             {
-                p->draw();
+                if (p)
+                {
+                    p->draw();
+                }
             }
         }
         mCharacter.draw();
@@ -136,12 +135,12 @@ Game::GameObject::GameObject(Game &game, const string &path, int r, int c)
     mSprite.setPosition(sf::Vector2f(mX, mY));
 }
 
-Game::Floor::Floor(Game &game, const string &path, int r, int c)
+Game::EmptyCell::EmptyCell(Game &game, const string &path, int r, int c)
     : GameObject(game, path, r, c)
 {
 }
 
-void Game::Floor::draw()
+void Game::EmptyCell::draw()
 {
     mGame.mWindow.draw(mSprite);
 }
@@ -167,28 +166,45 @@ void Game::Flower::draw()
 }
 
 Game::Apple::Apple(Game &game, const string &path, int r, int c)
-    : GameObject(game, path, r, c)
+    : GameObject(game, path, r, c), curState(State::stand)
 {
 }
 
 void Game::Apple::draw()
 {
     mGame.mWindow.draw(mSprite);
+    move();
 }
 
-bool Game::Apple::checkTiles(float x, float y)
-{   
-    return true;
-}
-
-bool Game::Apple::move(int dx, int dy)
+void Game::Apple::startMove(int dr, int dc)
 {
-    mX += dx;
-    mY += dy;
-    mSprite.setPosition(mX, mY);
-    mRow = (mX - (mGame.mWindow.getSize().x / 2.0f - mSprite.getGlobalBounds().width * (mGame.mLevels[0][0].size() / 2.0f))) / mSprite.getGlobalBounds().width;
-    mCol = (mY - (mGame.mWindow.getSize().y / 2.0f - mSprite.getGlobalBounds().height * (mGame.mLevels[0].size() / 2.0f))) / mSprite.getGlobalBounds().height;
-    cout << mRow << " " << mCol << endl;
+    mNumOfSteps = MaxCount * 4;
+    float distOfStep = mGame.mCellSize / mNumOfSteps;
+
+    mGame.mGameObjects[mRow + dr][mCol + dc].swap(mGame.mGameObjects[mRow + dr][mCol + dc]);
+    swap(mGame.mLevels[0][mRow + dr][mCol + dc], mGame.mLevels[0][mRow + dr][mCol + dc]);
+    mDirection.x = distOfStep * dc;
+    mDirection.y = distOfStep * dr;
+    mRow += dr;
+    mCol += dc;
+    curState = State::moving;
+}
+
+bool Game::Apple::move()
+{
+    if (curState == State::moving)
+    {
+        mX += mDirection.x;
+        mY += mDirection.y;
+        --mNumOfSteps;
+        if (mNumOfSteps == 0)
+        {
+            mDirection.x = 0;
+            mDirection.y = 0;
+            curState = State::stand;
+        }
+        mSprite.setPosition(mX, mY);
+    }
     return true;
 }
 
@@ -202,26 +218,16 @@ void Game::Ball::draw()
     mGame.mWindow.draw(mSprite);
 }
 
-bool Game::Ball::checkTiles(float x, float y)
+bool Game::Ball::move()
 {
-    x /= 5;
-    y /= 5;
-    return mGame.mLevels[0][mRow + y][mCol + x] == '.';
-}
-
-bool Game::Ball::move(int dx, int dy)
-{
-    mX += dx;
-    mY += dy;
-    mSprite.setPosition(mX, mY);
-    mRow = (mX - (mGame.mWindow.getSize().x / 2.0f - mSprite.getGlobalBounds().width * (mGame.mLevels[0][0].size() / 2.0f))) / mSprite.getGlobalBounds().width;
     return true;
 }
 
 // MainCharacter
 Game::MainCharacter::MainCharacter(Game &game)
     : mGame(game),
-      mCounter(0), mAnimationIndex(0), mFrameIndex(0), curState(State::standDown), mDirection(sf::Vector2f(0.0f, 0.0f))
+      mCounter(0), mAnimationIndex(0), mFrameIndex(0), curState(State::standDown), mDirection(sf::Vector2f(0.0f, 0.0f)),
+      mNumOfSteps(MaxCount * 4), mDistOfSteps(32 * 4 / mNumOfSteps)
 {
     if (!mTexture.loadFromFile("data/cat.png"))
     {
@@ -243,10 +249,12 @@ Game::MainCharacter::MainCharacter(Game &game)
     }
 }
 
-void Game::MainCharacter::setCoords(int row, int col)
+void Game::MainCharacter::setCoords(int col, int row)
 {
-    float x = (mGame.mWindow.getSize().x / 2.0f - mSprites[0][0]->getGlobalBounds().width * (mGame.mLevels[0][0].size() / 2.0f)) + mSprites[0][0]->getGlobalBounds().width * row;
-    float y = (mGame.mWindow.getSize().y / 2.0f - mSprites[0][0]->getGlobalBounds().width * (mGame.mLevels[0].size() / 2.0f)) + mSprites[0][0]->getGlobalBounds().width * col;
+    mRow = row;
+    mCol = col;
+    float x = (mGame.mWindow.getSize().x / 2.0f - mSprites[0][0]->getGlobalBounds().width * (mGame.mLevels[0][0].size() / 2.0f)) + mSprites[0][0]->getGlobalBounds().width * col;
+    float y = (mGame.mWindow.getSize().y / 2.0f - mSprites[0][0]->getGlobalBounds().width * (mGame.mLevels[0].size() / 2.0f)) + mSprites[0][0]->getGlobalBounds().width * row;
     mCoords = sf::Vector2f(x, y);
 }
 
@@ -255,115 +263,107 @@ void Game::MainCharacter::draw()
     mSprites[mAnimationIndex][mFrameIndex]->setOrigin(mSprites[mAnimationIndex][mFrameIndex]->getLocalBounds().width / 2.0f, mSprites[mAnimationIndex][mFrameIndex]->getLocalBounds().height / 2.0f);
     mSprites[mAnimationIndex][mFrameIndex]->setPosition(mCoords);
     mGame.mWindow.draw(*mSprites[mAnimationIndex][mFrameIndex]);
-    if (curState == State::goLeft || curState == State::goRight || curState == State::goUp || curState == State::goDown)
+    if (curState == State::goLeft || curState == State::goRight ||
+        curState == State::goUp || curState == State::goDown)
     {
         ++mCounter;
-        if (mCounter == 10)
+        if (mCounter == MaxCount)
         {
             mCounter = 0;
             mFrameIndex = (mFrameIndex + 1) % mSprites[mAnimationIndex].size();
         }
     }
+    move();
+}
+
+bool Game::MainCharacter::canMove(int dr, int dc) const
+{
+    if (mGame.mLevels[0][mRow + dr][mCol + dc] == '.')
+    {
+        return true;
+    }
+
+    if (mGame.mLevels[0][mRow + dr][mCol + dc] == 'A' && mGame.mLevels[0][mRow + dr + dr][mCol + dc + dc] == '.')
+    {
+        auto p = dynamic_cast<Apple *>(mGame.mGameObjects[mRow + dr][mCol + dc].get());
+        p->startMove(dr, dc);
+        return true;
+    }
+
+    return false;
 }
 
 void Game::MainCharacter::move()
 {
-    if (!sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left) && !sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right) &&
-        !sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up) && !sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down))
-    {
-        mFrameIndex = 0;
-        if (curState == State::goLeft)
-        {
-            curState = State::standLeft;
-        }
-        else if (curState == State::goRight)
-        {
-            curState = State::standRight;
-        }
-        else if (curState == State::goUp)
-        {
-            curState = State::standUp;
-        }
-        else if (curState == State::goDown)
-        {
-            curState = State::standDown;
-        }
-        return;
-    }
-    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left) && curState != State::goLeft)
-    {
-        curState = State::goLeft;
-        mDirection.x = -5;
-        mDirection.y = 0;
-        mAnimationIndex = 1;
-    }
-    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right) && curState != State::goRight)
-    {
-        curState = State::goRight;
-        mDirection.x = 5;
-        mDirection.y = 0;
-        mAnimationIndex = 2;
-    }
-    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up) && curState != State::goUp)
-    {
-        curState = State::goUp;
-        mDirection.x = 0;
-        mDirection.y = -5;
-        mAnimationIndex = 3;
-    }
-    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down) && curState != State::goDown)
-    {
-        curState = State::goDown;
-        mDirection.x = 0;
-        mDirection.y = 5;
-        mAnimationIndex = 0;
-    }
-
-    bool canMove = true;
-    bool movableObj = false;
-
-    for (const auto &row : mGame.mGameObjects)
-    {
-        for (const auto &p : row)
-        {
-            if (p->cantMove(mCoords.x + mDirection.x, mCoords.y + mDirection.y, mSprites[0][0]->getGlobalBounds().width / 2.0f))
-            {
-                if (auto p1 = dynamic_cast<Apple *>(p.get()))
-                {
-                    if (p1->checkTiles(mDirection.x, mDirection.y))
-                    {
-                        p1->move(mDirection.x, mDirection.y);
-                    }
-                    else
-                    {
-                        canMove = false;
-                    }
-                }
-                else if (auto p2 = dynamic_cast<Ball *>(p.get()))
-                {
-                    if (p2->checkTiles(mDirection.x, mDirection.y))
-                    {
-                        p2->move(mDirection.x, mDirection.y);
-                    }
-                    else
-                    {
-                        canMove = false;
-                    }
-                }
-                else
-                {
-                    canMove = false;
-                }
-
-                break;
-            }
-        }
-        if (!canMove || movableObj)
-            break;
-    }
-
-    if (canMove || movableObj)
+    if (curState == State::goDown || curState == State::goUp ||
+        curState == State::goLeft || curState == State::goRight)
     {
         mCoords += mDirection;
+        --mNumOfSteps;
+        if (mNumOfSteps == 0)
+        {
+            switch (curState)
+            {
+            case State::goDown:
+                curState = State::standDown;
+                break;
+            case State::goUp:
+                curState = State::standUp;
+                break;
+            case State::goLeft:
+                curState = State::standLeft;
+                break;
+            case State::goRight:
+                curState = State::standRight;
+                break;
+            default:
+                break;
+            }
+            mFrameIndex = 0;
+            mDirection.x = 0;
+            mDirection.y = 0;
+        }
+    }
+    else
+    {
+        mNumOfSteps = MaxCount * 4;
+        float distOfStep = mGame.mCellSize / mNumOfSteps;
+
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left) && canMove(0, -1))
+        {
+            curState = State::goLeft;
+            mDirection.x = -distOfStep;
+            mDirection.y = 0;
+            mAnimationIndex = 1;
+            mFrameIndex = 0;
+            --mCol;
+        }
+        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right) && canMove(0, 1))
+        {
+            curState = State::goRight;
+            mDirection.x = distOfStep;
+            mDirection.y = 0;
+            mAnimationIndex = 2;
+            mFrameIndex = 0;
+            ++mCol;
+        }
+        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up) && canMove(-1, 0))
+        {
+            curState = State::goUp;
+            mDirection.x = 0;
+            mDirection.y = -distOfStep;
+            mAnimationIndex = 3;
+            mFrameIndex = 0;
+            --mRow;
+        }
+        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down) && canMove(1, 0))
+        {
+            curState = State::goDown;
+            mDirection.x = 0;
+            mDirection.y = distOfStep;
+            mAnimationIndex = 0;
+            mFrameIndex = 0;
+            ++mRow;
+        }
     }
 }
