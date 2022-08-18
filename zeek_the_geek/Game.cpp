@@ -2,7 +2,6 @@
 #include <sstream>
 #include <iostream>
 #include "Game.hpp"
-// #include "MainCharacter.hpp"
 
 using namespace std;
 
@@ -11,19 +10,27 @@ Game::Game()
 {
     mWindow.setVerticalSyncEnabled(true);
 
+
     if (!loadLevels())
     {
         cout << "can't read from file" << endl;
         exit(1);
     }
 
-    loadTiles(0);
+    mFloorText.loadFromFile("data/floor_0.png");
+    mFloorSprite.setTexture(mFloorText);
+    mFloorSprite.setScale(4, 4);
+    mFloorSprite.setOrigin(mFloorSprite.getLocalBounds().width / 2, mFloorSprite.getLocalBounds().height / 2);
 
-    mCellSize = mGameObjects[0][0]->getSize();
-    
+    mCellSize = mFloorSprite.getGlobalBounds().width;
+    mCenterX = mWindow.getSize().x / 2.0f - mCellSize * (mLevels[0][0].size() / 2.0f);
+    mCenterY = mWindow.getSize().y / 2.0f - mCellSize * (mLevels[0].size() / 2.0f);
+   
+    loadTiles(0);
+   
     mFont.loadFromFile("data/FONT.TTF");
     mScoreBar.setFont(mFont);
-    mScoreBar.setCharacterSize(mCellSize * 2);
+    mScoreBar.setCharacterSize(mCellSize / 2);
     mScoreBar.setFillColor(sf::Color::White);
     mScoreBar.setPosition(0, 0);
 }
@@ -104,6 +111,18 @@ void Game::loadTiles(size_t level)
     }
 }
 
+void Game::drawField()
+{
+    for (size_t r = 0; r < mLevels[0].size(); r++)
+    {
+        for (size_t c = 0; c < mLevels[0][r].size(); c++)
+        {
+            mFloorSprite.setPosition(mCenterX + mCellSize * c, mCenterY + mCellSize * r);
+            mWindow.draw(mFloorSprite);
+        }
+    }
+}
+
 void Game::run()
 {
     while (mWindow.isOpen())
@@ -118,6 +137,7 @@ void Game::run()
         }
 
         mWindow.clear();
+        drawField();
         for (const auto &v : mGameObjects)
         {
             for (const auto &p : v)
@@ -132,7 +152,7 @@ void Game::run()
 
         mScoreBar.setString("Score: " + to_string(mScore));
         mWindow.draw(mScoreBar);
-        
+
         mWindow.display();
     }
 }
@@ -144,8 +164,8 @@ Game::GameObject::GameObject(Game &game, const string &path, int r, int c)
     mSprite.setTexture(mTexture);
     mSprite.setScale(4, 4);
     mSprite.setOrigin(mSprite.getLocalBounds().width / 2.0f, mSprite.getLocalBounds().height / 2.0f);
-    mX = (game.mWindow.getSize().x / 2.0f - mSprite.getGlobalBounds().width * (game.mLevels[0][0].size() / 2.0f)) + mSprite.getGlobalBounds().width * c;
-    mY = (game.mWindow.getSize().y / 2.0f - mSprite.getGlobalBounds().height * (game.mLevels[0].size() / 2.0f)) + mSprite.getGlobalBounds().height * r;
+    mX = mGame.mCenterX + mSprite.getGlobalBounds().width * c;
+    mY = mGame.mCenterY + mSprite.getGlobalBounds().height * r;
     mSprite.setPosition(sf::Vector2f(mX, mY));
 }
 

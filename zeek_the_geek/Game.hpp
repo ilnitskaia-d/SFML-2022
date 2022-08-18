@@ -77,6 +77,7 @@ class Game
     class Flower : public GameObject
     {
         bool mActivated = false;
+
     public:
         Flower(Game &game, const string &path, int r, int c);
         void draw() override;
@@ -142,12 +143,20 @@ private:
     vector<vector<string>> mLevels;
     vector<vector<unique_ptr<GameObject>>> mGameObjects;
     float mCellSize;
+    float mCenterX;
+    float mCenterY;
+    
     sf::Font mFont;
     sf::Text mScoreBar;
     int mScore;
 
+    sf::Texture mFloorText;
+    sf::Sprite mFloorSprite;
+
     bool loadLevels();
     void loadTiles(size_t level);
+
+    void drawField();
 
 public:
     Game();
