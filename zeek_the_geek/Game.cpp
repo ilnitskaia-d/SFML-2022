@@ -7,7 +7,7 @@
 using namespace std;
 
 Game::Game()
-    : mWindow(sf::VideoMode::getDesktopMode(), "SFML app", sf::Style::Fullscreen), mCharacter(*this)
+    : mWindow(sf::VideoMode::getDesktopMode(), "SFML app", sf::Style::Fullscreen), mCharacter(*this), mScore(0)
 {
     mWindow.setVerticalSyncEnabled(true);
 
@@ -20,6 +20,12 @@ Game::Game()
     loadTiles(0);
 
     mCellSize = mGameObjects[0][0]->getSize();
+    
+    mFont.loadFromFile("data/FONT.TTF");
+    mScoreBar.setFont(mFont);
+    mScoreBar.setCharacterSize(mCellSize * 2);
+    mScoreBar.setFillColor(sf::Color::White);
+    mScoreBar.setPosition(0, 0);
 }
 
 bool Game::loadLevels()
@@ -123,6 +129,10 @@ void Game::run()
             }
         }
         mCharacter.draw();
+
+        mScoreBar.setString("Score: " + to_string(mScore));
+        mWindow.draw(mScoreBar);
+        
         mWindow.display();
     }
 }
@@ -161,7 +171,17 @@ Game::Flower::Flower(Game &game, const string &path, int r, int c)
 
 void Game::Flower::draw()
 {
-    mGame.mWindow.draw(mSprite);
+    if (!mActivated)
+    {
+        mGame.mWindow.draw(mSprite);
+    }
+}
+
+void Game::Flower::activate()
+{
+    mGame.mLevels[0][mRow][mCol] = '.';
+    mActivated = true;
+    mGame.mScore++;
 }
 
 Game::Apple::Apple(Game &game, const string &path, int r, int c)
@@ -322,6 +342,13 @@ bool Game::MainCharacter::canMove(int dr, int dc) const
     {
         auto p = dynamic_cast<Ball *>(mGame.mGameObjects[mRow + dr][mCol + dc].get());
         p->startMove(dr, dc);
+        return true;
+    }
+
+    if (mGame.mLevels[0][mRow + dr][mCol + dc] == 'F')
+    {
+        auto p = dynamic_cast<Flower *>(mGame.mGameObjects[mRow + dr][mCol + dc].get());
+        p->activate();
         return true;
     }
 

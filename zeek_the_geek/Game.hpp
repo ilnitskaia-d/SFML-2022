@@ -76,9 +76,11 @@ class Game
 
     class Flower : public GameObject
     {
+        bool mActivated = false;
     public:
         Flower(Game &game, const string &path, int r, int c);
         void draw() override;
+        void activate();
     };
 
     class Apple : public GameObject, IMovable
@@ -140,6 +142,9 @@ private:
     vector<vector<string>> mLevels;
     vector<vector<unique_ptr<GameObject>>> mGameObjects;
     float mCellSize;
+    sf::Font mFont;
+    sf::Text mScoreBar;
+    int mScore;
 
     bool loadLevels();
     void loadTiles(size_t level);
