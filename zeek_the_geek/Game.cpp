@@ -6,10 +6,9 @@
 using namespace std;
 
 Game::Game()
-    : mWindow(sf::VideoMode::getDesktopMode(), "SFML app", sf::Style::Fullscreen), mCharacter(*this), mScore(0)
+    : mWindow(sf::VideoMode::getDesktopMode(), "SFML app", sf::Style::Fullscreen), mCharacter(*this), mScore(0), mCurLevel(0)
 {
     mWindow.setVerticalSyncEnabled(true);
-
 
     if (!loadLevels())
     {
@@ -23,11 +22,9 @@ Game::Game()
     mFloorSprite.setOrigin(mFloorSprite.getLocalBounds().width / 2, mFloorSprite.getLocalBounds().height / 2);
 
     mCellSize = mFloorSprite.getGlobalBounds().width;
-    mCenterX = mWindow.getSize().x / 2.0f - mCellSize * (mLevels[0][0].size() / 2.0f);
-    mCenterY = mWindow.getSize().y / 2.0f - mCellSize * (mLevels[0].size() / 2.0f);
-   
+
     loadTiles(0);
-   
+
     mFont.loadFromFile("data/FONT.TTF");
     mScoreBar.setFont(mFont);
     mScoreBar.setCharacterSize(mCellSize / 2);
@@ -35,47 +32,65 @@ Game::Game()
     mScoreBar.setPosition(0, 0);
 }
 
+void Game::prepareNextLevel()
+{
+    if (mCurLevel < mLevels.size() - 1)
+    {
+        mCurLevel++;
+        loadTiles(mCurLevel);
+    }
+}
+
 bool Game::loadLevels()
 {
-    fstream level("data/levels.data");
+    std::fstream level("data/levels.data");
     if (!level)
     {
-        cout << "file not found" << endl;
+        std::cout << "file not found" << std::endl;
         return false;
     }
-
-    string line;
-    if (!getline(level, line))
+    for (;;)
     {
-        cout << "line" << endl;
-        return false;
-    }
-
-    int h;
-    istringstream sinp(line);
-    if (!(sinp >> h))
-    {
-        cout << "error 2" << endl;
-        return false;
-    }
-
-    vector<string> curLevel;
-    for (int i = 0; i < int(h); i++)
-    {
-        if (!getline(level, line))
+        std::string line;
+        if (!std::getline(level, line))
         {
-            cout << "error 3" << endl;
+            break;
+        }
+
+        if (!std::getline(level, line))
+        {
             return false;
         }
-        curLevel.push_back(line);
+
+        int h;
+        std::istringstream sinp(line);
+        if (!(sinp >> h))
+        {
+            return false;
+        }
+
+        std::vector<std::string> curLevel;
+        for (int i = 0; i < int(h); i++)
+        {
+            if (!std::getline(level, line))
+            {
+                return false;
+            }
+            curLevel.push_back(line);
+        }
+
+        mLevels.push_back(curLevel);
     }
 
-    mLevels.push_back(curLevel);
     return true;
 }
 
 void Game::loadTiles(size_t level)
 {
+    mCenterX = mWindow.getSize().x / 2.0f - mCellSize * (mLevels[mCurLevel][0].size() / 2.0f);
+    mCenterY = mWindow.getSize().y / 2.0f - mCellSize * (mLevels[mCurLevel].size() / 2.0f);
+
+    mGameObjects.clear();
     mGameObjects.resize(mLevels[level].size());
     for (size_t r = 0; r < mLevels[level].size(); r++)
     {
@@ -97,6 +112,10 @@ void Game::loadTiles(size_t level)
             {
                 mGameObjects[r].push_back(make_unique<Ball>(*this, "data/ball.png", r, c));
             }
+            else if (mLevels[level][r][c] == 'M')
+            {
+                mGameObjects[r].push_back(make_unique<Mouse>(*this, "data/mouse.png", r, c));
+            }
             else if (mLevels[level][r][c] == 'C')
             {
                 mGameObjects[r].push_back(nullptr);
@@ -113,9 +132,9 @@ void Game::loadTiles(size_t level)
 
 void Game::drawField()
 {
-    for (size_t r = 0; r < mLevels[0].size(); r++)
+    for (size_t r = 0; r < mLevels[mCurLevel].size(); r++)
     {
-        for (size_t c = 0; c < mLevels[0][r].size(); c++)
+        for (size_t c = 0; c < mLevels[mCurLevel][r].size(); c++)
         {
             mFloorSprite.setPosition(mCenterX + mCellSize * c, mCenterY + mCellSize * r);
             mWindow.draw(mFloorSprite);
@@ -199,7 +218,7 @@ void Game::Flower::draw()
 
 void Game::Flower::activate()
 {
-    mGame.mLevels[0][mRow][mCol] = '.';
+    mGame.mLevels[mGame.mCurLevel][mRow][mCol] = '.';
     mActivated = true;
     mGame.mScore++;
 }
@@ -221,7 +240,7 @@ void Game::Apple::startMove(int dr, int dc)
     float distOfStep = mGame.mCellSize / mNumOfSteps;
 
     mGame.mGameObjects[mRow + dr][mCol + dc].swap(mGame.mGameObjects[mRow][mCol]);
-    swap(mGame.mLevels[0][mRow + dr][mCol + dc], mGame.mLevels[0][mRow][mCol]);
+    swap(mGame.mLevels[mGame.mCurLevel][mRow + dr][mCol + dc], mGame.mLevels[mGame.mCurLevel][mRow][mCol]);
 
     mDirection.x = distOfStep * dc;
     mDirection.y = distOfStep * dr;
@@ -265,7 +284,7 @@ void Game::Ball::startMove(int dr, int dc)
     float distOfStep = mGame.mCellSize / mNumOfSteps;
 
     mGame.mGameObjects[mRow + dr][mCol + dc].swap(mGame.mGameObjects[mRow][mCol]);
-    swap(mGame.mLevels[0][mRow + dr][mCol + dc], mGame.mLevels[0][mRow][mCol]);
+    swap(mGame.mLevels[mGame.mCurLevel][mRow + dr][mCol + dc], mGame.mLevels[mGame.mCurLevel][mRow][mCol]);
 
     mDirection.x = distOfStep * dc;
     mDirection.y = distOfStep * dr;
@@ -290,6 +309,26 @@ bool Game::Ball::move()
         mSprite.setPosition(mX, mY);
     }
     return true;
+}
+
+Game::Mouse::Mouse(Game &game, const string &path, int r, int c)
+    : GameObject(game, path, r, c)
+{
+}
+
+void Game::Mouse::draw()
+{
+    if (!mActivated)
+    {
+        mGame.mWindow.draw(mSprite);
+    }
+}
+
+void Game::Mouse::activate()
+{
+    mGame.mLevels[mGame.mCurLevel][mRow][mCol] = '.';
+    mActivated = true;
+    mGame.prepareNextLevel();
 }
 
 // MainCharacter
@@ -322,8 +361,8 @@ void Game::MainCharacter::setCoords(int row, int col)
 {
     mRow = row;
     mCol = col;
-    float x = (mGame.mWindow.getSize().x / 2.0f - mSprites[0][0]->getGlobalBounds().width * (mGame.mLevels[0][0].size() / 2.0f)) + mSprites[0][0]->getGlobalBounds().width * col;
-    float y = (mGame.mWindow.getSize().y / 2.0f - mSprites[0][0]->getGlobalBounds().width * (mGame.mLevels[0].size() / 2.0f)) + mSprites[0][0]->getGlobalBounds().width * row;
+    float x = (mGame.mWindow.getSize().x / 2.0f - mSprites[0][0]->getGlobalBounds().width * (mGame.mLevels[mGame.mCurLevel][0].size() / 2.0f)) + mSprites[0][0]->getGlobalBounds().width * col;
+    float y = (mGame.mWindow.getSize().y / 2.0f - mSprites[0][0]->getGlobalBounds().width * (mGame.mLevels[mGame.mCurLevel].size() / 2.0f)) + mSprites[0][0]->getGlobalBounds().width * row;
     mCoords = sf::Vector2f(x, y);
 }
 
@@ -346,28 +385,35 @@ void Game::MainCharacter::draw()
 
 bool Game::MainCharacter::canMove(int dr, int dc) const
 {
-    if (mGame.mLevels[0][mRow + dr][mCol + dc] == '.')
+    if (mGame.mLevels[mGame.mCurLevel][mRow + dr][mCol + dc] == '.')
     {
         return true;
     }
 
-    if (mGame.mLevels[0][mRow + dr][mCol + dc] == 'A' && mGame.mLevels[0][mRow + dr + dr][mCol + dc + dc] == '.')
+    if (mGame.mLevels[mGame.mCurLevel][mRow + dr][mCol + dc] == 'A' && mGame.mLevels[mGame.mCurLevel][mRow + dr + dr][mCol + dc + dc] == '.')
     {
         auto p = dynamic_cast<Apple *>(mGame.mGameObjects[mRow + dr][mCol + dc].get());
         p->startMove(dr, dc);
         return true;
     }
 
-    if (mGame.mLevels[0][mRow + dr][mCol + dc] == 'B' && mGame.mLevels[0][mRow + dr + dr][mCol + dc + dc] == '.')
+    if (mGame.mLevels[mGame.mCurLevel][mRow + dr][mCol + dc] == 'B' && mGame.mLevels[mGame.mCurLevel][mRow + dr + dr][mCol + dc + dc] == '.')
     {
         auto p = dynamic_cast<Ball *>(mGame.mGameObjects[mRow + dr][mCol + dc].get());
         p->startMove(dr, dc);
         return true;
     }
 
-    if (mGame.mLevels[0][mRow + dr][mCol + dc] == 'F')
+    if (mGame.mLevels[mGame.mCurLevel][mRow + dr][mCol + dc] == 'F')
     {
         auto p = dynamic_cast<Flower *>(mGame.mGameObjects[mRow + dr][mCol + dc].get());
+        p->activate();
+        return true;
+    }
+
+    if (mGame.mLevels[mGame.mCurLevel][mRow + dr][mCol + dc] == 'M')
+    {
+        auto p = dynamic_cast<Mouse *>(mGame.mGameObjects[mRow + dr][mCol + dc].get());
         p->activate();
         return true;
     }

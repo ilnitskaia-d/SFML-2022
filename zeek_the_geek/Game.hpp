@@ -102,6 +102,17 @@ class Game
         bool move() override;
     };
 
+    class Mouse : public GameObject
+    {
+        
+        bool mActivated = false;
+
+    public:
+        Mouse(Game &game, const string &path, int r, int c);
+        void draw() override;
+        void activate();
+    };
+
     class MainCharacter
     {
         enum State
@@ -145,15 +156,17 @@ private:
     float mCellSize;
     float mCenterX;
     float mCenterY;
-    
+
     sf::Font mFont;
     sf::Text mScoreBar;
     int mScore;
+    size_t mCurLevel;
 
     sf::Texture mFloorText;
     sf::Sprite mFloorSprite;
 
     bool loadLevels();
+    void prepareNextLevel();
     void loadTiles(size_t level);
 
     void drawField();
