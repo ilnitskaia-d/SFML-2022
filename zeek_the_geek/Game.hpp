@@ -50,14 +50,21 @@ class Game
 
     struct IMovable
     {
-        virtual bool move() = 0;
-    };
+    protected:
+        enum State
+        {
+            Moving,
+            Standing
+        };
+        State curState;
+        sf::Vector2f mDirection;
+        const int MaxCount = 10;
+        int mNumOfSteps;
 
-    class EmptyCell : public GameObject
-    {
     public:
-        EmptyCell(Game &game, const string &path, int r, int c);
-        void draw() override;
+        IMovable();
+        virtual bool move() = 0;
+        virtual void startMove(int dr, int dc) = 0;
     };
 
     class Wall : public GameObject
@@ -76,22 +83,10 @@ class Game
 
     class Apple : public GameObject, IMovable
     {
-        enum State
-        {
-            Moving,
-            Standing
-        };
-
-        State curState;
-        sf::Vector2f mDirection;
-        const int MaxCount = 10;
-        int mNumOfSteps;
-        int mDistOfSteps;
-
     public:
         Apple(Game &game, const string &path, int r, int c);
         void draw() override;
-        void startMove(int dr, int dc);
+        void startMove(int dr, int dc) override;
         bool move() override;
     };
 
@@ -100,6 +95,7 @@ class Game
     public:
         Ball(Game &game, const string &path, int r, int c);
         void draw() override;
+        void startMove(int dr, int dc) override;
         bool move() override;
     };
 

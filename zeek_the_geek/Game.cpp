@@ -80,6 +80,10 @@ void Game::loadTiles(size_t level)
             {
                 mGameObjects[r].push_back(make_unique<Wall>(*this, "data/wall_0.png", r, c));
             }
+            else if (mLevels[level][r][c] == 'B')
+            {
+                mGameObjects[r].push_back(make_unique<Ball>(*this, "data/ball.png", r, c));
+            }
             else if (mLevels[level][r][c] == 'C')
             {
                 mGameObjects[r].push_back(nullptr);
@@ -135,14 +139,9 @@ Game::GameObject::GameObject(Game &game, const string &path, int r, int c)
     mSprite.setPosition(sf::Vector2f(mX, mY));
 }
 
-Game::EmptyCell::EmptyCell(Game &game, const string &path, int r, int c)
-    : GameObject(game, path, r, c)
+Game::IMovable::IMovable()
+    : curState(State::Standing), mDirection(0, 0)
 {
-}
-
-void Game::EmptyCell::draw()
-{
-    mGame.mWindow.draw(mSprite);
 }
 
 Game::Wall::Wall(Game &game, const string &path, int r, int c)
@@ -166,7 +165,7 @@ void Game::Flower::draw()
 }
 
 Game::Apple::Apple(Game &game, const string &path, int r, int c)
-    : GameObject(game, path, r, c), curState(State::Standing)
+    : GameObject(game, path, r, c)
 {
 }
 
@@ -183,11 +182,6 @@ void Game::Apple::startMove(int dr, int dc)
 
     mGame.mGameObjects[mRow + dr][mCol + dc].swap(mGame.mGameObjects[mRow][mCol]);
     swap(mGame.mLevels[0][mRow + dr][mCol + dc], mGame.mLevels[0][mRow][mCol]);
-    for (auto &v : mGame.mLevels[0])
-    {
-        cout << v << endl;
-    }
-    cout << "----" << endl;
 
     mDirection.x = distOfStep * dc;
     mDirection.y = distOfStep * dr;
@@ -222,10 +216,39 @@ Game::Ball::Ball(Game &game, const string &path, int r, int c)
 void Game::Ball::draw()
 {
     mGame.mWindow.draw(mSprite);
+    move();
+}
+
+void Game::Ball::startMove(int dr, int dc)
+{
+    mNumOfSteps = MaxCount * 4;
+    float distOfStep = mGame.mCellSize / mNumOfSteps;
+
+    mGame.mGameObjects[mRow + dr][mCol + dc].swap(mGame.mGameObjects[mRow][mCol]);
+    swap(mGame.mLevels[0][mRow + dr][mCol + dc], mGame.mLevels[0][mRow][mCol]);
+
+    mDirection.x = distOfStep * dc;
+    mDirection.y = distOfStep * dr;
+    mRow += dr;
+    mCol += dc;
+    curState = State::Moving;
 }
 
 bool Game::Ball::move()
 {
+    if (curState == State::Moving)
+    {
+        mX += mDirection.x;
+        mY += mDirection.y;
+        --mNumOfSteps;
+        if (mNumOfSteps == 0)
+        {
+            mDirection.x = 0;
+            mDirection.y = 0;
+            curState = State::Standing;
+        }
+        mSprite.setPosition(mX, mY);
+    }
     return true;
 }
 
@@ -291,6 +314,13 @@ bool Game::MainCharacter::canMove(int dr, int dc) const
     if (mGame.mLevels[0][mRow + dr][mCol + dc] == 'A' && mGame.mLevels[0][mRow + dr + dr][mCol + dc + dc] == '.')
     {
         auto p = dynamic_cast<Apple *>(mGame.mGameObjects[mRow + dr][mCol + dc].get());
+        p->startMove(dr, dc);
+        return true;
+    }
+
+    if (mGame.mLevels[0][mRow + dr][mCol + dc] == 'B' && mGame.mLevels[0][mRow + dr + dr][mCol + dc + dc] == '.')
+    {
+        auto p = dynamic_cast<Ball *>(mGame.mGameObjects[mRow + dr][mCol + dc].get());
         p->startMove(dr, dc);
         return true;
     }
