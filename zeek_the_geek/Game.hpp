@@ -78,8 +78,8 @@ class Game
     {
         enum State
         {
-            moving,
-            stand
+            Moving,
+            Standing
         };
 
         State curState;
@@ -107,14 +107,8 @@ class Game
     {
         enum State
         {
-            goLeft,
-            goRight,
-            goUp,
-            goDown,
-            standLeft,
-            standRight,
-            standUp,
-            standDown,
+            Moving,
+            Standing
         };
 
         sf::Texture mTexture;
