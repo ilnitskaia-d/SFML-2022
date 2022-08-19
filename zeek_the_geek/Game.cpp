@@ -116,6 +116,10 @@ void Game::loadTiles(size_t level)
             {
                 mGameObjects[r].push_back(make_unique<Mouse>(*this, "data/mouse.png", r, c));
             }
+            else if (mLevels[level][r][c] == 'E')
+            {
+                mGameObjects[r].push_back(make_unique<Bomb>(*this, "data/bomb.png", r, c));
+            }
             else if (mLevels[level][r][c] == 'C')
             {
                 mGameObjects[r].push_back(nullptr);
@@ -219,6 +223,7 @@ void Game::Flower::draw()
 void Game::Flower::activate()
 {
     mGame.mLevels[mGame.mCurLevel][mRow][mCol] = '.';
+    mGame.mGameObjects[mRow][mCol].release();
     mActivated = true;
     mGame.mScore++;
 }
@@ -327,8 +332,102 @@ void Game::Mouse::draw()
 void Game::Mouse::activate()
 {
     mGame.mLevels[mGame.mCurLevel][mRow][mCol] = '.';
+    mGame.mGameObjects[mRow][mCol].release();
     mActivated = true;
     mGame.prepareNextLevel();
+}
+
+Game::Bomb::Bomb(Game &game, const string &path, int r, int c)
+    : GameObject(game, path, r, c), mCounter(0), mAnimationIndex(0), mFrameIndex(0), mActivated(false)
+
+{
+    int frameW = mTexture.getSize().x / 2;
+    int frameH = mTexture.getSize().y / 2;
+
+    mSprites.resize(2);
+    for (int i = 0; i < 2; ++i)
+    {
+        for (int j = 0; j < 2; ++j)
+        {
+            mSprites[i].push_back(make_unique<sf::Sprite>(mTexture, sf::IntRect(j * frameW, i * frameH, frameW, frameH)));
+            mSprites[i].back()->setScale(4, 4);
+        }
+    }
+    mX = mGame.mCenterX + mSprites[0][0]->getGlobalBounds().width * c;
+    mY = mGame.mCenterY + mSprites[0][0]->getGlobalBounds().height * r;
+}
+
+void Game::Bomb::draw()
+{
+    mSprites[mAnimationIndex][mFrameIndex]->setOrigin(mSprites[mAnimationIndex][mFrameIndex]->getLocalBounds().width / 2.0f,
+                                                      mSprites[mAnimationIndex][mFrameIndex]->getLocalBounds().height / 2.0f);
+    mSprites[mAnimationIndex][mFrameIndex]->setPosition(mX, mY);
+    mGame.mWindow.draw(*mSprites[mAnimationIndex][mFrameIndex]);
+    if (curState == State::Moving || mActivated)
+    {
+        ++mCounter;
+        if (--mCounterExp == 0)
+        {
+            mAnimationIndex = 1;
+            mFrameIndex = 0;
+        }
+        cout << mCounterExp << endl;
+
+        if (mCounter == MaxCount)
+        {
+            if (mFrameIndex == 1 && mCounterExp < 0)
+            {
+                mGame.mLevels[mGame.mCurLevel][mRow][mCol] = '.';
+                if (mGame.mLevels[mGame.mCurLevel][mRow][mCol - 1] != '.' && mGame.mLevels[mGame.mCurLevel][mRow][mCol - 1] != 'W')
+                {
+                    mGame.mGameObjects[mRow][mCol - 1].release();
+                }
+                mGame.mGameObjects[mRow][mCol].release();
+                return;
+            }
+            else
+            {
+                mCounter = 0;
+                mFrameIndex = (mFrameIndex + 1) % mSprites[mAnimationIndex].size();
+            }
+        }
+    }
+    move();
+}
+
+void Game::Bomb::startMove(int dr, int dc)
+{
+    mNumOfSteps = MaxCount * 4;
+    float distOfStep = mGame.mCellSize / mNumOfSteps;
+
+    mGame.mGameObjects[mRow + dr][mCol + dc].swap(mGame.mGameObjects[mRow][mCol]);
+    swap(mGame.mLevels[mGame.mCurLevel][mRow + dr][mCol + dc], mGame.mLevels[mGame.mCurLevel][mRow][mCol]);
+
+    mDirection.x = distOfStep * dc;
+    mDirection.y = distOfStep * dr;
+    mRow += dr;
+    mCol += dc;
+    curState = State::Moving;
+    mActivated = true;
+    mCounterExp = 200;
+}
+
+bool Game::Bomb::move()
+{
+    if (curState == State::Moving)
+    {
+        mX += mDirection.x;
+        mY += mDirection.y;
+        --mNumOfSteps;
+        if (mNumOfSteps == 0)
+        {
+            mDirection.x = 0;
+            mDirection.y = 0;
+            curState = State::Standing;
+        }
+        mSprite.setPosition(mX, mY);
+    }
+    return true;
 }
 
 // MainCharacter
@@ -400,6 +499,13 @@ bool Game::MainCharacter::canMove(int dr, int dc) const
     if (mGame.mLevels[mGame.mCurLevel][mRow + dr][mCol + dc] == 'B' && mGame.mLevels[mGame.mCurLevel][mRow + dr + dr][mCol + dc + dc] == '.')
     {
         auto p = dynamic_cast<Ball *>(mGame.mGameObjects[mRow + dr][mCol + dc].get());
+        p->startMove(dr, dc);
+        return true;
+    }
+
+    if (mGame.mLevels[mGame.mCurLevel][mRow + dr][mCol + dc] == 'E' && mGame.mLevels[mGame.mCurLevel][mRow + dr + dr][mCol + dc + dc] == '.')
+    {
+        auto p = dynamic_cast<Bomb *>(mGame.mGameObjects[mRow + dr][mCol + dc].get());
         p->startMove(dr, dc);
         return true;
     }

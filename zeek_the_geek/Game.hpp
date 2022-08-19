@@ -104,13 +104,28 @@ class Game
 
     class Mouse : public GameObject
     {
-        
         bool mActivated = false;
 
     public:
         Mouse(Game &game, const string &path, int r, int c);
         void draw() override;
         void activate();
+    };
+
+    class Bomb : public GameObject, IMovable
+    {
+        vector<vector<unique_ptr<sf::Sprite>>> mSprites;
+        int mCounter;
+        int mCounterExp;
+        size_t mAnimationIndex;
+        size_t mFrameIndex;
+        bool mActivated;
+
+    public:
+        Bomb(Game &game, const string &path, int r, int c);
+        void draw() override;
+        void startMove(int dr, int dc) override;
+        bool move() override;
     };
 
     class MainCharacter
