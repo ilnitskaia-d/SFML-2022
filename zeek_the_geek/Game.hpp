@@ -4,8 +4,6 @@
 #include <memory>
 #include <iostream>
 
-// #include "MainCharacter.hpp"
-
 using namespace std;
 
 class Game
@@ -84,6 +82,30 @@ class Game
         void activate();
     };
 
+    class Door : public GameObject
+    {
+        bool mActivated = false;
+
+    public:
+        Door(Game &game, const string &path, int r, int c);
+        void draw() override;
+        void activate();
+        bool getActivStatus()
+        {
+            return mActivated;
+        }
+    };
+
+    class Key : public GameObject
+    {
+        bool mActivated = false;
+
+    public:
+        Key(Game &game, const string &path, int r, int c);
+        void draw() override;
+        void activate();
+    };
+
     class Apple : public GameObject, IMovable
     {
     public:
@@ -128,6 +150,26 @@ class Game
         bool move() override;
     };
 
+    class BadCat : public GameObject, IMovable
+    {
+        vector<vector<unique_ptr<sf::Sprite>>> mSprites;
+        int mCounter;
+        int mCounterExp;
+        size_t mAnimationIndex;
+        size_t mFrameIndex;
+        bool mActivated;
+        BadCat *mRival;
+        int dRow;
+        int dCol;
+
+    public:
+        BadCat(Game &game, const string &path, int r, int c);
+        void activate();
+        void draw() override;
+        void startMove(int dr, int dc) override;
+        bool move() override;
+    };
+
     class MainCharacter
     {
         enum State
@@ -154,6 +196,8 @@ class Game
         int mNumOfSteps;
         int mDistOfSteps;
 
+        bool mHasKey;
+
     public:
         MainCharacter(Game &game);
 
@@ -161,6 +205,8 @@ class Game
         void move();
         void draw();
         void setCoords(int row, int col);
+        void setKey(bool b);
+        bool getKey();
     };
 
 private:

@@ -120,6 +120,18 @@ void Game::loadTiles(size_t level)
             {
                 mGameObjects[r].push_back(make_unique<Bomb>(*this, "data/bomb.png", r, c));
             }
+            else if (mLevels[level][r][c] == 'R')
+            {
+                mGameObjects[r].push_back(make_unique<BadCat>(*this, "data/badcat.png", r, c));
+            }
+            else if (mLevels[level][r][c] == 'K')
+            {
+                mGameObjects[r].push_back(make_unique<Key>(*this, "data/key.png", r, c));
+            }
+            else if (mLevels[level][r][c] == 'D')
+            {
+                mGameObjects[r].push_back(make_unique<Door>(*this, "data/door.png", r, c));
+            }
             else if (mLevels[level][r][c] == 'C')
             {
                 mGameObjects[r].push_back(nullptr);
@@ -226,6 +238,51 @@ void Game::Flower::activate()
     mGame.mGameObjects[mRow][mCol].release();
     mActivated = true;
     mGame.mScore++;
+}
+
+Game::Door::Door(Game &game, const string &path, int r, int c)
+    : GameObject(game, path, r, c)
+{
+}
+
+void Game::Door::draw()
+{
+    if (!mActivated)
+    {
+        mGame.mWindow.draw(mSprite);
+    }
+}
+
+void Game::Door::activate()
+{
+    if (mGame.mCharacter.getKey())
+    {
+        mGame.mLevels[mGame.mCurLevel][mRow][mCol] = '.';
+        // mGame.mGameObjects[mRow][mCol].release();
+        mGame.mCharacter.setKey(false);
+        mActivated = true;
+    }
+}
+
+Game::Key::Key(Game &game, const string &path, int r, int c)
+    : GameObject(game, path, r, c)
+{
+}
+
+void Game::Key::draw()
+{
+    if (!mActivated)
+    {
+        mGame.mWindow.draw(mSprite);
+    }
+}
+
+void Game::Key::activate()
+{
+    mGame.mLevels[mGame.mCurLevel][mRow][mCol] = '.';
+    mGame.mCharacter.setKey(true);
+    mActivated = true;
+    // mGame.mGameObjects[mRow][mCol].release();
 }
 
 Game::Apple::Apple(Game &game, const string &path, int r, int c)
@@ -430,11 +487,137 @@ bool Game::Bomb::move()
     return true;
 }
 
+Game::BadCat::BadCat(Game &game, const string &path, int r, int c)
+    : GameObject(game, path, r, c), mCounter(0), mAnimationIndex(0), mFrameIndex(0), mActivated(false), mRival(nullptr)
+
+{
+    int frameW = mTexture.getSize().x / 2;
+    int frameH = mTexture.getSize().y / 2;
+
+    mSprites.resize(2);
+    for (int i = 0; i < 2; ++i)
+    {
+        for (int j = 0; j < 2; ++j)
+        {
+            mSprites[i].push_back(make_unique<sf::Sprite>(mTexture, sf::IntRect(j * frameW, i * frameH, frameW, frameH)));
+            mSprites[i].back()->setScale(4, 4);
+        }
+    }
+    mX = mGame.mCenterX + mSprites[0][0]->getGlobalBounds().width * c;
+    mY = mGame.mCenterY + mSprites[0][0]->getGlobalBounds().height * r;
+}
+
+void Game::BadCat::activate()
+{
+    if (curState == State::Standing)
+    {
+        mActivated = true;
+        mCounterExp = 100;
+    }
+}
+
+void Game::BadCat::draw()
+{
+    if (curState == State::Standing && !mActivated)
+    {
+        if (mGame.mLevels[mGame.mCurLevel][mRow - 1][mCol] == 'R' || mGame.mLevels[mGame.mCurLevel][mRow + 1][mCol] == 'R' ||
+            mGame.mLevels[mGame.mCurLevel][mRow][mCol - 1] == 'R' || mGame.mLevels[mGame.mCurLevel][mRow][mCol + 1] == 'R')
+        {
+            activate();
+            if (auto p = dynamic_cast<BadCat *>(mGame.mGameObjects[mRow + 1][mCol].get()))
+            {
+                p->activate();
+            }
+            if (auto p1 = dynamic_cast<BadCat *>(mGame.mGameObjects[mRow - 1][mCol].get()))
+            {
+                p1->activate();
+            }
+            if (auto p2 = dynamic_cast<BadCat *>(mGame.mGameObjects[mRow][mCol - 1].get()))
+            {
+                p2->activate();
+            }
+            if (auto p3 = dynamic_cast<BadCat *>(mGame.mGameObjects[mRow][mCol + 1].get()))
+            {
+                p3->activate();
+            }
+        }
+    }
+
+    mSprites[mAnimationIndex][mFrameIndex]->setOrigin(mSprites[mAnimationIndex][mFrameIndex]->getLocalBounds().width / 2.0f,
+                                                      mSprites[mAnimationIndex][mFrameIndex]->getLocalBounds().height / 2.0f);
+    mSprites[mAnimationIndex][mFrameIndex]->setPosition(mX, mY);
+    mGame.mWindow.draw(*mSprites[mAnimationIndex][mFrameIndex]);
+    if (mActivated)
+    {
+        ++mCounter;
+        if (--mCounterExp == 0)
+        {
+            mAnimationIndex = 1;
+            mFrameIndex = 0;
+        }
+
+        if (mCounter == MaxCount)
+        {
+            if (mFrameIndex == 1 && mCounterExp < 0)
+            {
+                mGame.mLevels[mGame.mCurLevel][mRow][mCol] = '.';
+                mGame.mGameObjects[mRow][mCol].release();
+                return;
+            }
+            else
+            {
+                mCounter = 0;
+                mFrameIndex = (mFrameIndex + 1) % mSprites[mAnimationIndex].size();
+            }
+        }
+    }
+    move();
+}
+
+void Game::BadCat::startMove(int dr, int dc)
+{
+    mNumOfSteps = MaxCount * 4;
+    float distOfStep = mGame.mCellSize / mNumOfSteps;
+
+    dRow = dr;
+    dCol = dc;
+
+    mDirection.x = distOfStep * dc;
+    mDirection.y = distOfStep * dr;
+
+    curState = State::Moving;
+}
+
+bool Game::BadCat::move()
+{
+    if (curState == State::Moving)
+    {
+        mX += mDirection.x;
+        mY += mDirection.y;
+        --mNumOfSteps;
+        if (mNumOfSteps == 0)
+        {
+            mDirection.x = 0;
+            mDirection.y = 0;
+            curState = State::Standing;
+
+            mGame.mGameObjects[mRow + dRow][mCol + dCol].swap(mGame.mGameObjects[mRow][mCol]);
+            swap(mGame.mLevels[mGame.mCurLevel][mRow + dRow][mCol + dCol], mGame.mLevels[mGame.mCurLevel][mRow][mCol]);
+
+            mRow += dRow;
+            mCol += dCol;
+        }
+        mSprite.setPosition(mX, mY);
+    }
+    return true;
+}
+
 // MainCharacter
 Game::MainCharacter::MainCharacter(Game &game)
     : mGame(game),
       mCounter(0), mAnimationIndex(0), mFrameIndex(0), curState(State::Standing), mDirection(sf::Vector2f(0.0f, 0.0f)),
-      mNumOfSteps(MaxCount * 4), mDistOfSteps(32 * 4 / mNumOfSteps)
+      mNumOfSteps(MaxCount * 4), mDistOfSteps(32 * 4 / mNumOfSteps),
+      mHasKey(false)
 {
     if (!mTexture.loadFromFile("data/cat.png"))
     {
@@ -467,7 +650,8 @@ void Game::MainCharacter::setCoords(int row, int col)
 
 void Game::MainCharacter::draw()
 {
-    mSprites[mAnimationIndex][mFrameIndex]->setOrigin(mSprites[mAnimationIndex][mFrameIndex]->getLocalBounds().width / 2.0f, mSprites[mAnimationIndex][mFrameIndex]->getLocalBounds().height / 2.0f);
+    mSprites[mAnimationIndex][mFrameIndex]->setOrigin(mSprites[mAnimationIndex][mFrameIndex]->getLocalBounds().width / 2.0f,
+                                                      mSprites[mAnimationIndex][mFrameIndex]->getLocalBounds().height / 2.0f);
     mSprites[mAnimationIndex][mFrameIndex]->setPosition(mCoords);
     mGame.mWindow.draw(*mSprites[mAnimationIndex][mFrameIndex]);
     if (curState == State::Moving)
@@ -489,23 +673,34 @@ bool Game::MainCharacter::canMove(int dr, int dc) const
         return true;
     }
 
-    if (mGame.mLevels[mGame.mCurLevel][mRow + dr][mCol + dc] == 'A' && mGame.mLevels[mGame.mCurLevel][mRow + dr + dr][mCol + dc + dc] == '.')
+    if (mGame.mLevels[mGame.mCurLevel][mRow + dr][mCol + dc] == 'A' &&
+        mGame.mLevels[mGame.mCurLevel][mRow + dr + dr][mCol + dc + dc] == '.')
     {
         auto p = dynamic_cast<Apple *>(mGame.mGameObjects[mRow + dr][mCol + dc].get());
         p->startMove(dr, dc);
         return true;
     }
 
-    if (mGame.mLevels[mGame.mCurLevel][mRow + dr][mCol + dc] == 'B' && mGame.mLevels[mGame.mCurLevel][mRow + dr + dr][mCol + dc + dc] == '.')
+    if (mGame.mLevels[mGame.mCurLevel][mRow + dr][mCol + dc] == 'B' &&
+        mGame.mLevels[mGame.mCurLevel][mRow + dr + dr][mCol + dc + dc] == '.')
     {
         auto p = dynamic_cast<Ball *>(mGame.mGameObjects[mRow + dr][mCol + dc].get());
         p->startMove(dr, dc);
         return true;
     }
 
-    if (mGame.mLevels[mGame.mCurLevel][mRow + dr][mCol + dc] == 'E' && mGame.mLevels[mGame.mCurLevel][mRow + dr + dr][mCol + dc + dc] == '.')
+    if (mGame.mLevels[mGame.mCurLevel][mRow + dr][mCol + dc] == 'E' &&
+        mGame.mLevels[mGame.mCurLevel][mRow + dr + dr][mCol + dc + dc] == '.')
     {
         auto p = dynamic_cast<Bomb *>(mGame.mGameObjects[mRow + dr][mCol + dc].get());
+        p->startMove(dr, dc);
+        return true;
+    }
+
+    if (mGame.mLevels[mGame.mCurLevel][mRow + dr][mCol + dc] == 'R' &&
+        mGame.mLevels[mGame.mCurLevel][mRow + dr + dr][mCol + dc + dc] == '.')
+    {
+        auto p = dynamic_cast<BadCat *>(mGame.mGameObjects[mRow + dr][mCol + dc].get());
         p->startMove(dr, dc);
         return true;
     }
@@ -524,7 +719,31 @@ bool Game::MainCharacter::canMove(int dr, int dc) const
         return true;
     }
 
+    if (mGame.mLevels[mGame.mCurLevel][mRow + dr][mCol + dc] == 'K')
+    {
+        auto p = dynamic_cast<Key *>(mGame.mGameObjects[mRow + dr][mCol + dc].get());
+        p->activate();
+        return true;
+    }
+
+    if (mGame.mLevels[mGame.mCurLevel][mRow + dr][mCol + dc] == 'D')
+    {
+        auto p = dynamic_cast<Door *>(mGame.mGameObjects[mRow + dr][mCol + dc].get());
+        p->activate();
+        return p->getActivStatus();
+    }
+
     return false;
+}
+
+void Game::MainCharacter::setKey(bool b)
+{
+    mHasKey = b;
+}
+
+bool Game::MainCharacter::getKey()
+{
+    return mHasKey;
 }
 
 void Game::MainCharacter::move()
