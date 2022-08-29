@@ -193,20 +193,31 @@ void Game::run()
 }
 
 Game::GameObject::GameObject(Game &game, const string &path, int r, int c)
-    : mGame(game), mRow(r), mCol(c)
+    : mGame(game), mRow(r), mCol(c),
+      curState(State::Standing), mDirection(0, 0),
+      mCounter(0), mAnimationIndex(0), mFrameIndex(0)
 {
     mTexture.loadFromFile(path);
-    mSprite.setTexture(mTexture);
-    mSprite.setScale(4, 4);
-    mSprite.setOrigin(mSprite.getLocalBounds().width / 2.0f, mSprite.getLocalBounds().height / 2.0f);
-    mX = mGame.mCenterX + mSprite.getGlobalBounds().width * c;
-    mY = mGame.mCenterY + mSprite.getGlobalBounds().height * r;
-    mSprite.setPosition(sf::Vector2f(mX, mY));
-}
 
-Game::IMovable::IMovable()
-    : curState(State::Standing), mDirection(0, 0)
-{
+    int nFramesX = mTexture.getSize().x / 32;
+    int nFramesY = mTexture.getSize().y / 32;
+
+    int frameSize = 32;
+
+    mSprites.resize(nFramesY);
+    for (int i = 0; i < nFramesY; ++i)
+    {
+        for (int j = 0; j < nFramesX; ++j)
+        {
+            mSprites[i].push_back(make_unique<sf::Sprite>(mTexture, sf::IntRect(j * frameSize, i * frameSize, frameSize, frameSize)));
+            mSprites[i].back()->setScale(4, 4);
+        }
+    }
+
+    mSprites[0][0]->setOrigin(frameSize / 2.0f, frameSize / 2.0f);
+    mX = mGame.mCenterX + frameSize * 4 * c;
+    mY = mGame.mCenterY + frameSize * 4 * r;
+    mSprites[0][0]->setPosition(sf::Vector2f(mX, mY));
 }
 
 Game::Wall::Wall(Game &game, const string &path, int r, int c)
@@ -216,7 +227,7 @@ Game::Wall::Wall(Game &game, const string &path, int r, int c)
 
 void Game::Wall::draw()
 {
-    mGame.mWindow.draw(mSprite);
+    mGame.mWindow.draw(*mSprites[mAnimationIndex][mFrameIndex]);
 }
 
 Game::Flower::Flower(Game &game, const string &path, int r, int c)
@@ -228,7 +239,7 @@ void Game::Flower::draw()
 {
     if (!mActivated)
     {
-        mGame.mWindow.draw(mSprite);
+        mGame.mWindow.draw(*mSprites[mAnimationIndex][mFrameIndex]);
     }
 }
 
@@ -249,7 +260,7 @@ void Game::Door::draw()
 {
     if (!mActivated)
     {
-        mGame.mWindow.draw(mSprite);
+        mGame.mWindow.draw(*mSprites[mAnimationIndex][mFrameIndex]);
     }
 }
 
@@ -273,7 +284,7 @@ void Game::Key::draw()
 {
     if (!mActivated)
     {
-        mGame.mWindow.draw(mSprite);
+        mGame.mWindow.draw(*mSprites[mAnimationIndex][mFrameIndex]);
     }
 }
 
@@ -292,7 +303,7 @@ Game::Apple::Apple(Game &game, const string &path, int r, int c)
 
 void Game::Apple::draw()
 {
-    mGame.mWindow.draw(mSprite);
+    mGame.mWindow.draw(*mSprites[mAnimationIndex][mFrameIndex]);
     move();
 }
 
@@ -324,7 +335,7 @@ bool Game::Apple::move()
             mDirection.y = 0;
             curState = State::Standing;
         }
-        mSprite.setPosition(mX, mY);
+        mSprites[mAnimationIndex][mFrameIndex]->setPosition(mX, mY);
     }
     return true;
 }
@@ -336,7 +347,7 @@ Game::Ball::Ball(Game &game, const string &path, int r, int c)
 
 void Game::Ball::draw()
 {
-    mGame.mWindow.draw(mSprite);
+    mGame.mWindow.draw(*mSprites[mAnimationIndex][mFrameIndex]);
     move();
 }
 
@@ -368,7 +379,7 @@ bool Game::Ball::move()
             mDirection.y = 0;
             curState = State::Standing;
         }
-        mSprite.setPosition(mX, mY);
+        mSprites[mAnimationIndex][mFrameIndex]->setPosition(mX, mY);
     }
     return true;
 }
@@ -382,7 +393,7 @@ void Game::Mouse::draw()
 {
     if (!mActivated)
     {
-        mGame.mWindow.draw(mSprite);
+        mGame.mWindow.draw(*mSprites[mAnimationIndex][mFrameIndex]);
     }
 }
 
@@ -395,23 +406,23 @@ void Game::Mouse::activate()
 }
 
 Game::Bomb::Bomb(Game &game, const string &path, int r, int c)
-    : GameObject(game, path, r, c), mCounter(0), mAnimationIndex(0), mFrameIndex(0), mActivated(false)
+    : GameObject(game, path, r, c), mActivated(false)
 
 {
-    int frameW = mTexture.getSize().x / 2;
-    int frameH = mTexture.getSize().y / 2;
+    // int frameW = mTexture.getSize().x / 2;
+    // int frameH = mTexture.getSize().y / 2;
 
-    mSprites.resize(2);
-    for (int i = 0; i < 2; ++i)
-    {
-        for (int j = 0; j < 2; ++j)
-        {
-            mSprites[i].push_back(make_unique<sf::Sprite>(mTexture, sf::IntRect(j * frameW, i * frameH, frameW, frameH)));
-            mSprites[i].back()->setScale(4, 4);
-        }
-    }
-    mX = mGame.mCenterX + mSprites[0][0]->getGlobalBounds().width * c;
-    mY = mGame.mCenterY + mSprites[0][0]->getGlobalBounds().height * r;
+    // mSprites.resize(2);
+    // for (int i = 0; i < 2; ++i)
+    // {
+    //     for (int j = 0; j < 2; ++j)
+    //     {
+    //         mSprites[i].push_back(make_unique<sf::Sprite>(mTexture, sf::IntRect(j * frameW, i * frameH, frameW, frameH)));
+    //         mSprites[i].back()->setScale(4, 4);
+    //     }
+    // }
+    // mX = mGame.mCenterX + mSprites[0][0]->getGlobalBounds().width * c;
+    // mY = mGame.mCenterY + mSprites[0][0]->getGlobalBounds().height * r;
 }
 
 void Game::Bomb::draw()
@@ -482,29 +493,29 @@ bool Game::Bomb::move()
             mDirection.y = 0;
             curState = State::Standing;
         }
-        mSprite.setPosition(mX, mY);
+        mSprites[mAnimationIndex][mFrameIndex]->setPosition(mX, mY);
     }
     return true;
 }
 
 Game::BadCat::BadCat(Game &game, const string &path, int r, int c)
-    : GameObject(game, path, r, c), mCounter(0), mAnimationIndex(0), mFrameIndex(0), mActivated(false), mRival(nullptr)
+    : GameObject(game, path, r, c), mActivated(false)
 
 {
-    int frameW = mTexture.getSize().x / 2;
-    int frameH = mTexture.getSize().y / 2;
+    // int frameW = mTexture.getSize().x / 2;
+    // int frameH = mTexture.getSize().y / 2;
 
-    mSprites.resize(2);
-    for (int i = 0; i < 2; ++i)
-    {
-        for (int j = 0; j < 2; ++j)
-        {
-            mSprites[i].push_back(make_unique<sf::Sprite>(mTexture, sf::IntRect(j * frameW, i * frameH, frameW, frameH)));
-            mSprites[i].back()->setScale(4, 4);
-        }
-    }
-    mX = mGame.mCenterX + mSprites[0][0]->getGlobalBounds().width * c;
-    mY = mGame.mCenterY + mSprites[0][0]->getGlobalBounds().height * r;
+    // mSprites.resize(2);
+    // for (int i = 0; i < 2; ++i)
+    // {
+    //     for (int j = 0; j < 2; ++j)
+    //     {
+    //         mSprites[i].push_back(make_unique<sf::Sprite>(mTexture, sf::IntRect(j * frameW, i * frameH, frameW, frameH)));
+    //         mSprites[i].back()->setScale(4, 4);
+    //     }
+    // }
+    // mX = mGame.mCenterX + mSprites[0][0]->getGlobalBounds().width * c;
+    // mY = mGame.mCenterY + mSprites[0][0]->getGlobalBounds().height * r;
 }
 
 void Game::BadCat::activate()
@@ -607,7 +618,7 @@ bool Game::BadCat::move()
             mRow += dRow;
             mCol += dCol;
         }
-        mSprite.setPosition(mX, mY);
+        mSprites[mAnimationIndex][mFrameIndex]->setPosition(mX, mY);
     }
     return true;
 }

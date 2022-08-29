@@ -11,13 +11,30 @@ class Game
     class GameObject
     {
     protected:
+        enum State
+        {
+            Moving,
+            Standing
+        };
+
         Game &mGame;
         sf::Texture mTexture;
-        sf::Sprite mSprite;
+        vector<vector<unique_ptr<sf::Sprite>>> mSprites;
+
         int mRow;
         int mCol;
         float mX;
         float mY;
+
+        State curState;
+        sf::Vector2f mDirection;
+        const int MaxCount = 10;
+        int mNumOfSteps;
+
+        int mCounter;
+        int mCounterExp;
+        size_t mAnimationIndex;
+        size_t mFrameIndex;
 
     public:
         GameObject(Game &game, const string &path, int r, int c);
@@ -36,33 +53,8 @@ class Game
 
         virtual float getSize()
         {
-            return mSprite.getGlobalBounds().width;
+            return mSprites[0][0]->getGlobalBounds().width;
         }
-
-        virtual bool cantMove(float x, float y, float size)
-        {
-            return (mX - mSprite.getGlobalBounds().width / 2.0f < size + x && x - size < mX + mSprite.getGlobalBounds().width / 2.0f &&
-                    mY - mSprite.getGlobalBounds().height / 2.0f < y + size && y - size < mY + mSprite.getGlobalBounds().height / 2.0f);
-        };
-    };
-
-    struct IMovable
-    {
-    protected:
-        enum State
-        {
-            Moving,
-            Standing
-        };
-        State curState;
-        sf::Vector2f mDirection;
-        const int MaxCount = 10;
-        int mNumOfSteps;
-
-    public:
-        IMovable();
-        virtual bool move() = 0;
-        virtual void startMove(int dr, int dc) = 0;
     };
 
     class Wall : public GameObject
@@ -106,22 +98,22 @@ class Game
         void activate();
     };
 
-    class Apple : public GameObject, IMovable
+    class Apple : public GameObject
     {
     public:
         Apple(Game &game, const string &path, int r, int c);
         void draw() override;
-        void startMove(int dr, int dc) override;
-        bool move() override;
+        void startMove(int dr, int dc);
+        bool move();
     };
 
-    class Ball : public GameObject, IMovable
+    class Ball : public GameObject
     {
     public:
         Ball(Game &game, const string &path, int r, int c);
         void draw() override;
-        void startMove(int dr, int dc) override;
-        bool move() override;
+        void startMove(int dr, int dc);
+        bool move();
     };
 
     class Mouse : public GameObject
@@ -134,31 +126,21 @@ class Game
         void activate();
     };
 
-    class Bomb : public GameObject, IMovable
+    class Bomb : public GameObject
     {
-        vector<vector<unique_ptr<sf::Sprite>>> mSprites;
-        int mCounter;
-        int mCounterExp;
-        size_t mAnimationIndex;
-        size_t mFrameIndex;
         bool mActivated;
 
     public:
         Bomb(Game &game, const string &path, int r, int c);
         void draw() override;
-        void startMove(int dr, int dc) override;
-        bool move() override;
+        void startMove(int dr, int dc);
+        bool move();
     };
 
-    class BadCat : public GameObject, IMovable
+    class BadCat : public GameObject
     {
-        vector<vector<unique_ptr<sf::Sprite>>> mSprites;
-        int mCounter;
-        int mCounterExp;
-        size_t mAnimationIndex;
-        size_t mFrameIndex;
         bool mActivated;
-        BadCat *mRival;
+
         int dRow;
         int dCol;
 
@@ -166,8 +148,8 @@ class Game
         BadCat(Game &game, const string &path, int r, int c);
         void activate();
         void draw() override;
-        void startMove(int dr, int dc) override;
-        bool move() override;
+        void startMove(int dr, int dc);
+        bool move();
     };
 
     class MainCharacter
