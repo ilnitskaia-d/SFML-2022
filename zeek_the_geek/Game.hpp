@@ -152,6 +152,17 @@ class Game
         bool move();
     };
 
+    class Snake : public GameObject
+    {
+        bool mActivated;
+        vector<sf::Texture> mTextures;
+    public:
+        Snake(Game &game, const string &path, int r, int c);
+        void draw() override;
+        bool move();
+        void attack(int dr, int dc);
+    };
+
     class MainCharacter
     {
         enum State
@@ -174,11 +185,12 @@ class Game
 
         State curState;
         sf::Vector2f mDirection;
-        const int MaxCount = 10;
+        const int MaxCount = 8;
         int mNumOfSteps;
         int mDistOfSteps;
 
         bool mHasKey;
+        bool mIsCaught;
 
     public:
         MainCharacter(Game &game);
@@ -189,6 +201,16 @@ class Game
         void setCoords(int row, int col);
         void setKey(bool b);
         bool getKey();
+        
+        int getRow()
+        {
+            return mRow;
+        }
+
+        int getCol()
+        {
+            return mCol;
+        }
     };
 
 private:

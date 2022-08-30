@@ -132,6 +132,10 @@ void Game::loadTiles(size_t level)
             {
                 mGameObjects[r].push_back(make_unique<Door>(*this, "data/door.png", r, c));
             }
+            else if (mLevels[level][r][c] == 'S')
+            {
+                mGameObjects[r].push_back(make_unique<Snake>(*this, "data/snake.png", r, c));
+            }
             else if (mLevels[level][r][c] == 'C')
             {
                 mGameObjects[r].push_back(nullptr);
@@ -293,7 +297,6 @@ void Game::Key::activate()
     mGame.mLevels[mGame.mCurLevel][mRow][mCol] = '.';
     mGame.mCharacter.setKey(true);
     mActivated = true;
-    // mGame.mGameObjects[mRow][mCol].release();
 }
 
 Game::Apple::Apple(Game &game, const string &path, int r, int c)
@@ -409,20 +412,6 @@ Game::Bomb::Bomb(Game &game, const string &path, int r, int c)
     : GameObject(game, path, r, c), mActivated(false)
 
 {
-    // int frameW = mTexture.getSize().x / 2;
-    // int frameH = mTexture.getSize().y / 2;
-
-    // mSprites.resize(2);
-    // for (int i = 0; i < 2; ++i)
-    // {
-    //     for (int j = 0; j < 2; ++j)
-    //     {
-    //         mSprites[i].push_back(make_unique<sf::Sprite>(mTexture, sf::IntRect(j * frameW, i * frameH, frameW, frameH)));
-    //         mSprites[i].back()->setScale(4, 4);
-    //     }
-    // }
-    // mX = mGame.mCenterX + mSprites[0][0]->getGlobalBounds().width * c;
-    // mY = mGame.mCenterY + mSprites[0][0]->getGlobalBounds().height * r;
 }
 
 void Game::Bomb::draw()
@@ -502,20 +491,6 @@ Game::BadCat::BadCat(Game &game, const string &path, int r, int c)
     : GameObject(game, path, r, c), mActivated(false)
 
 {
-    // int frameW = mTexture.getSize().x / 2;
-    // int frameH = mTexture.getSize().y / 2;
-
-    // mSprites.resize(2);
-    // for (int i = 0; i < 2; ++i)
-    // {
-    //     for (int j = 0; j < 2; ++j)
-    //     {
-    //         mSprites[i].push_back(make_unique<sf::Sprite>(mTexture, sf::IntRect(j * frameW, i * frameH, frameW, frameH)));
-    //         mSprites[i].back()->setScale(4, 4);
-    //     }
-    // }
-    // mX = mGame.mCenterX + mSprites[0][0]->getGlobalBounds().width * c;
-    // mY = mGame.mCenterY + mSprites[0][0]->getGlobalBounds().height * r;
 }
 
 void Game::BadCat::activate()
@@ -623,12 +598,170 @@ bool Game::BadCat::move()
     return true;
 }
 
+Game::Snake::Snake(Game &game, const string &path, int r, int c)
+    : GameObject(game, path, r, c), mActivated(false)
+
+{
+    mSprites.resize(2);
+    sf::Texture text;
+
+    if (!text.loadFromFile("data/snake_left.png"))
+    {
+        cout << "catn load left" << endl;
+    }
+    mTextures.push_back(text);
+    mSprites[1].push_back(make_unique<sf::Sprite>(mTextures.back()));
+
+    if (!text.loadFromFile("data/snake_up.png"))
+    {
+        cout << "catn load up" << endl;
+    }
+    mTextures.push_back(text);
+    mSprites[1].push_back(make_unique<sf::Sprite>(mTextures.back()));
+
+    if (!text.loadFromFile("data/snake_right.png"))
+    {
+        cout << "catn load right" << endl;
+    }
+    mTextures.push_back(text);
+    mSprites[1].push_back(make_unique<sf::Sprite>(mTextures.back()));
+
+    if (!text.loadFromFile("data/snake_down.png"))
+    {
+        cout << "catn load down" << endl;
+    }
+    mTextures.push_back(text);
+    mSprites[1].push_back(make_unique<sf::Sprite>(mTextures.back()));
+}
+
+void Game::Snake::draw()
+{
+    float originX;
+    float originY;
+    if (mAnimationIndex == 0)
+    {
+        originX = mSprites[mAnimationIndex][mFrameIndex]->getLocalBounds().width / 2.0f;
+        originY = mSprites[mAnimationIndex][mFrameIndex]->getLocalBounds().height / 2.0f;
+    }
+    else
+    {
+        if (mFrameIndex == 0)
+        {
+            originX = mSprites[mAnimationIndex][mFrameIndex]->getLocalBounds().width - mSprites[mAnimationIndex - 1][mFrameIndex]->getLocalBounds().width / 2.0f;
+            originY = mSprites[mAnimationIndex][mFrameIndex]->getLocalBounds().height / 2.0f;
+        }
+        else if (mFrameIndex == 1)
+        {
+            originX = mSprites[mAnimationIndex][mFrameIndex]->getLocalBounds().width / 2.0f;
+            originY = mSprites[mAnimationIndex][mFrameIndex]->getLocalBounds().height - mSprites[mAnimationIndex - 1][mFrameIndex]->getLocalBounds().height / 2.0f;
+        }
+        else if (mFrameIndex == 2)
+        {
+            originX = mSprites[mAnimationIndex - 1][mFrameIndex]->getLocalBounds().width / 2.0f;
+            originY = mSprites[mAnimationIndex][mFrameIndex]->getLocalBounds().height / 2.0f;
+        }
+        else if (mFrameIndex == 3)
+        {
+            originX = mSprites[mAnimationIndex][mFrameIndex]->getLocalBounds().width / 2.0f;
+            originY = mSprites[mAnimationIndex - 1][mFrameIndex]->getLocalBounds().height / 2.0f;
+        }
+    }
+
+    mSprites[mAnimationIndex][mFrameIndex]->setOrigin(originX, originY);
+    mSprites[mAnimationIndex][mFrameIndex]->setScale(4, 4);
+    mSprites[mAnimationIndex][mFrameIndex]->setPosition(mX, mY);
+    mGame.mWindow.draw(*mSprites[mAnimationIndex][mFrameIndex]);
+    if (mActivated)
+    {
+        ++mCounter;
+
+        if (mCounter == MaxCount)
+        {
+            mCounter = 0;
+            if (curState == State::Standing)
+            {
+                if ((mFrameIndex + 1) < mSprites[mAnimationIndex].size())
+                {
+                    mFrameIndex += 1;
+                }
+                else
+                {
+                    curState = State::Moving;
+                    mActivated = false;
+                }
+            }
+            else
+            {
+                mFrameIndex = mSprites[mAnimationIndex].size() - 1;
+                mAnimationIndex = 0;
+                mActivated = false;
+            }
+        }
+    }
+    move();
+}
+
+bool Game::Snake::move()
+{
+    if (curState == State::Standing)
+    {
+        if (mGame.mCharacter.getRow() == mRow)
+        {
+            if (mGame.mCharacter.getCol() == mCol - 1 || mGame.mCharacter.getCol() == mCol + 1)
+            {
+                mActivated = true;
+            }
+        }
+        else if (mGame.mCharacter.getCol() == mCol)
+        {
+            if (mGame.mCharacter.getRow() == mRow - 1 || mGame.mCharacter.getRow() == mRow + 1)
+            {
+                mActivated = true;
+            }
+        }
+    }
+    else
+    {
+        if (mGame.mCharacter.getRow() == mRow)
+        {
+            if (mGame.mCharacter.getCol() == mCol - 1)
+            {
+                mAnimationIndex = 1;
+                mFrameIndex = 0;
+                mActivated = true;
+            }
+            else if (mGame.mCharacter.getCol() == mCol + 1)
+            {
+                mAnimationIndex = 1;
+                mFrameIndex = 2;
+                mActivated = true;
+            }
+        }
+        else if (mGame.mCharacter.getCol() == mCol)
+        {
+            if (mGame.mCharacter.getRow() == mRow - 1)
+            {
+                mAnimationIndex = 1;
+                mFrameIndex = 1;
+                mActivated = true;
+            }
+            else if (mGame.mCharacter.getRow() == mRow + 1)
+            {
+                mAnimationIndex = 1;
+                mFrameIndex = 3;
+                mActivated = true;
+            }
+        }
+    }
+    return true;
+}
+
 // MainCharacter
 Game::MainCharacter::MainCharacter(Game &game)
     : mGame(game),
       mCounter(0), mAnimationIndex(0), mFrameIndex(0), curState(State::Standing), mDirection(sf::Vector2f(0.0f, 0.0f)),
       mNumOfSteps(MaxCount * 4), mDistOfSteps(32 * 4 / mNumOfSteps),
-      mHasKey(false)
+      mHasKey(false), mIsCaught(true)
 {
     if (!mTexture.loadFromFile("data/cat.png"))
     {
@@ -661,20 +794,23 @@ void Game::MainCharacter::setCoords(int row, int col)
 
 void Game::MainCharacter::draw()
 {
-    mSprites[mAnimationIndex][mFrameIndex]->setOrigin(mSprites[mAnimationIndex][mFrameIndex]->getLocalBounds().width / 2.0f,
-                                                      mSprites[mAnimationIndex][mFrameIndex]->getLocalBounds().height / 2.0f);
-    mSprites[mAnimationIndex][mFrameIndex]->setPosition(mCoords);
-    mGame.mWindow.draw(*mSprites[mAnimationIndex][mFrameIndex]);
-    if (curState == State::Moving)
+    if (mIsCaught)
     {
-        ++mCounter;
-        if (mCounter == MaxCount)
+        mSprites[mAnimationIndex][mFrameIndex]->setOrigin(mSprites[mAnimationIndex][mFrameIndex]->getLocalBounds().width / 2.0f,
+                                                          mSprites[mAnimationIndex][mFrameIndex]->getLocalBounds().height / 2.0f);
+        mSprites[mAnimationIndex][mFrameIndex]->setPosition(mCoords);
+        mGame.mWindow.draw(*mSprites[mAnimationIndex][mFrameIndex]);
+        if (curState == State::Moving)
         {
-            mCounter = 0;
-            mFrameIndex = (mFrameIndex + 1) % mSprites[mAnimationIndex].size();
+            ++mCounter;
+            if (mCounter == MaxCount)
+            {
+                mCounter = 0;
+                mFrameIndex = (mFrameIndex + 1) % mSprites[mAnimationIndex].size();
+            }
         }
+        move();
     }
-    move();
 }
 
 bool Game::MainCharacter::canMove(int dr, int dc) const
@@ -736,6 +872,13 @@ bool Game::MainCharacter::canMove(int dr, int dc) const
         p->activate();
         return true;
     }
+
+    // if (mGame.mLevels[mGame.mCurLevel][mRow + dr][mCol + dc] == 'S')
+    // {
+    //     auto p = dynamic_cast<Snake *>(mGame.mGameObjects[mRow + dr][mCol + dc].get());
+    //     p->activate();
+    //     return false;
+    // }
 
     if (mGame.mLevels[mGame.mCurLevel][mRow + dr][mCol + dc] == 'D')
     {
