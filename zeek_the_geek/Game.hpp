@@ -28,7 +28,7 @@ class Game
 
         State curState;
         sf::Vector2f mDirection;
-        const int MaxCount = 10;
+        const int MaxCount = 15;
         int mNumOfSteps;
 
         int mCounter;
@@ -156,6 +156,7 @@ class Game
     {
         bool mActivated;
         vector<sf::Texture> mTextures;
+
     public:
         Snake(Game &game, const string &path, int r, int c);
         void draw() override;
@@ -185,7 +186,7 @@ class Game
 
         State curState;
         sf::Vector2f mDirection;
-        const int MaxCount = 8;
+        const int MaxCount = 11;
         int mNumOfSteps;
         int mDistOfSteps;
 
@@ -201,7 +202,7 @@ class Game
         void setCoords(int row, int col);
         void setKey(bool b);
         bool getKey();
-        
+
         int getRow()
         {
             return mRow;
@@ -211,6 +212,9 @@ class Game
         {
             return mCol;
         }
+
+        void setCaught();
+        bool isCaught();
     };
 
 private:

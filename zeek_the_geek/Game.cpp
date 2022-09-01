@@ -675,11 +675,12 @@ void Game::Snake::draw()
     {
         ++mCounter;
 
-        if (mCounter == MaxCount)
+        if (curState == State::Standing)
         {
-            mCounter = 0;
-            if (curState == State::Standing)
+            if (mCounter == MaxCount)
             {
+                mCounter = 0;
+
                 if ((mFrameIndex + 1) < mSprites[mAnimationIndex].size())
                 {
                     mFrameIndex += 1;
@@ -690,12 +691,14 @@ void Game::Snake::draw()
                     mActivated = false;
                 }
             }
-            else
-            {
-                mFrameIndex = mSprites[mAnimationIndex].size() - 1;
-                mAnimationIndex = 0;
-                mActivated = false;
-            }
+        }
+
+        if (mCounter == MaxCount * 4 && curState == State::Moving)
+        {
+            mCounter = 0;
+            mFrameIndex = mSprites[mAnimationIndex].size() - 1;
+            mAnimationIndex = 0;
+            mActivated = false;
         }
     }
     move();
@@ -722,34 +725,41 @@ bool Game::Snake::move()
     }
     else
     {
-        if (mGame.mCharacter.getRow() == mRow)
+        if (!mGame.mCharacter.isCaught())
         {
-            if (mGame.mCharacter.getCol() == mCol - 1)
+            if (mGame.mCharacter.getRow() == mRow)
             {
-                mAnimationIndex = 1;
-                mFrameIndex = 0;
-                mActivated = true;
+                if (mGame.mCharacter.getCol() == mCol - 1)
+                {
+                    mAnimationIndex = 1;
+                    mFrameIndex = 0;
+                    mActivated = true;
+                    mGame.mCharacter.setCaught();
+                }
+                else if (mGame.mCharacter.getCol() == mCol + 1)
+                {
+                    mAnimationIndex = 1;
+                    mFrameIndex = 2;
+                    mActivated = true;
+                    mGame.mCharacter.setCaught();
+                }
             }
-            else if (mGame.mCharacter.getCol() == mCol + 1)
+            else if (mGame.mCharacter.getCol() == mCol)
             {
-                mAnimationIndex = 1;
-                mFrameIndex = 2;
-                mActivated = true;
-            }
-        }
-        else if (mGame.mCharacter.getCol() == mCol)
-        {
-            if (mGame.mCharacter.getRow() == mRow - 1)
-            {
-                mAnimationIndex = 1;
-                mFrameIndex = 1;
-                mActivated = true;
-            }
-            else if (mGame.mCharacter.getRow() == mRow + 1)
-            {
-                mAnimationIndex = 1;
-                mFrameIndex = 3;
-                mActivated = true;
+                if (mGame.mCharacter.getRow() == mRow - 1)
+                {
+                    mAnimationIndex = 1;
+                    mFrameIndex = 1;
+                    mActivated = true;
+                    mGame.mCharacter.setCaught();
+                }
+                else if (mGame.mCharacter.getRow() == mRow + 1)
+                {
+                    mAnimationIndex = 1;
+                    mFrameIndex = 3;
+                    mActivated = true;
+                    mGame.mCharacter.setCaught();
+                }
             }
         }
     }
@@ -761,7 +771,7 @@ Game::MainCharacter::MainCharacter(Game &game)
     : mGame(game),
       mCounter(0), mAnimationIndex(0), mFrameIndex(0), curState(State::Standing), mDirection(sf::Vector2f(0.0f, 0.0f)),
       mNumOfSteps(MaxCount * 4), mDistOfSteps(32 * 4 / mNumOfSteps),
-      mHasKey(false), mIsCaught(true)
+      mHasKey(false), mIsCaught(false)
 {
     if (!mTexture.loadFromFile("data/cat.png"))
     {
@@ -794,7 +804,7 @@ void Game::MainCharacter::setCoords(int row, int col)
 
 void Game::MainCharacter::draw()
 {
-    if (mIsCaught)
+    if (!mIsCaught)
     {
         mSprites[mAnimationIndex][mFrameIndex]->setOrigin(mSprites[mAnimationIndex][mFrameIndex]->getLocalBounds().width / 2.0f,
                                                           mSprites[mAnimationIndex][mFrameIndex]->getLocalBounds().height / 2.0f);
@@ -898,6 +908,16 @@ void Game::MainCharacter::setKey(bool b)
 bool Game::MainCharacter::getKey()
 {
     return mHasKey;
+}
+
+void Game::MainCharacter::setCaught()
+{
+    mIsCaught = true;
+}
+
+bool Game::MainCharacter::isCaught()
+{
+    return mIsCaught;
 }
 
 void Game::MainCharacter::move()
