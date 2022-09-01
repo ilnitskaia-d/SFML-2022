@@ -90,57 +90,59 @@ void Game::loadTiles(size_t level)
     mCenterX = mWindow.getSize().x / 2.0f - mCellSize * (mLevels[mCurLevel][0].size() / 2.0f);
     mCenterY = mWindow.getSize().y / 2.0f - mCellSize * (mLevels[mCurLevel].size() / 2.0f);
 
+    mCurMap = mLevels[level];
+
     mGameObjects.clear();
-    mGameObjects.resize(mLevels[level].size());
-    for (size_t r = 0; r < mLevels[level].size(); r++)
+    mGameObjects.resize(mCurMap.size());
+    for (size_t r = 0; r < mCurMap.size(); r++)
     {
-        for (size_t c = 0; c < mLevels[level][r].size(); c++)
+        for (size_t c = 0; c < mCurMap[r].size(); c++)
         {
-            if (mLevels[level][r][c] == 'A')
+            if (mCurMap[r][c] == 'A')
             {
                 mGameObjects[r].push_back(make_unique<Apple>(*this, "data/apple.png", r, c));
             }
-            else if (mLevels[level][r][c] == 'F')
+            else if (mCurMap[r][c] == 'F')
             {
                 mGameObjects[r].push_back(make_unique<Flower>(*this, "data/flower.png", r, c));
             }
-            else if (mLevels[level][r][c] == 'W')
+            else if (mCurMap[r][c] == 'W')
             {
                 mGameObjects[r].push_back(make_unique<Wall>(*this, "data/wall_0.png", r, c));
             }
-            else if (mLevels[level][r][c] == 'B')
+            else if (mCurMap[r][c] == 'B')
             {
                 mGameObjects[r].push_back(make_unique<Ball>(*this, "data/ball.png", r, c));
             }
-            else if (mLevels[level][r][c] == 'M')
+            else if (mCurMap[r][c] == 'M')
             {
                 mGameObjects[r].push_back(make_unique<Mouse>(*this, "data/mouse.png", r, c));
             }
-            else if (mLevels[level][r][c] == 'E')
+            else if (mCurMap[r][c] == 'E')
             {
                 mGameObjects[r].push_back(make_unique<Bomb>(*this, "data/bomb.png", r, c));
             }
-            else if (mLevels[level][r][c] == 'R')
+            else if (mCurMap[r][c] == 'R')
             {
                 mGameObjects[r].push_back(make_unique<BadCat>(*this, "data/badcat.png", r, c));
             }
-            else if (mLevels[level][r][c] == 'K')
+            else if (mCurMap[r][c] == 'K')
             {
                 mGameObjects[r].push_back(make_unique<Key>(*this, "data/key.png", r, c));
             }
-            else if (mLevels[level][r][c] == 'D')
+            else if (mCurMap[r][c] == 'D')
             {
                 mGameObjects[r].push_back(make_unique<Door>(*this, "data/door.png", r, c));
             }
-            else if (mLevels[level][r][c] == 'S')
+            else if (mCurMap[r][c] == 'S')
             {
                 mGameObjects[r].push_back(make_unique<Snake>(*this, "data/snake.png", r, c));
             }
-            else if (mLevels[level][r][c] == 'C')
+            else if (mCurMap[r][c] == 'C')
             {
                 mGameObjects[r].push_back(nullptr);
                 mCharacter.setCoords(r, c);
-                mLevels[level][r][c] = '.';
+                mCurMap[r][c] = '.';
             }
             else
             {
@@ -162,6 +164,13 @@ void Game::drawField()
     }
 }
 
+void Game::restart()
+{
+    loadTiles(mCurLevel);
+    mCharacter.setCaught(false);
+    mCharacter.setKey(false);
+}
+
 void Game::run()
 {
     while (mWindow.isOpen())
@@ -172,6 +181,10 @@ void Game::run()
             if (event.type == sf::Event::Closed)
             {
                 mWindow.close();
+            }
+            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Enter))
+            {
+                restart();
             }
         }
 
@@ -734,14 +747,14 @@ bool Game::Snake::move()
                     mAnimationIndex = 1;
                     mFrameIndex = 0;
                     mActivated = true;
-                    mGame.mCharacter.setCaught();
+                    mGame.mCharacter.setCaught(true);
                 }
                 else if (mGame.mCharacter.getCol() == mCol + 1)
                 {
                     mAnimationIndex = 1;
                     mFrameIndex = 2;
                     mActivated = true;
-                    mGame.mCharacter.setCaught();
+                    mGame.mCharacter.setCaught(true);
                 }
             }
             else if (mGame.mCharacter.getCol() == mCol)
@@ -751,14 +764,14 @@ bool Game::Snake::move()
                     mAnimationIndex = 1;
                     mFrameIndex = 1;
                     mActivated = true;
-                    mGame.mCharacter.setCaught();
+                    mGame.mCharacter.setCaught(true);
                 }
                 else if (mGame.mCharacter.getRow() == mRow + 1)
                 {
                     mAnimationIndex = 1;
                     mFrameIndex = 3;
                     mActivated = true;
-                    mGame.mCharacter.setCaught();
+                    mGame.mCharacter.setCaught(true);
                 }
             }
         }
@@ -883,13 +896,6 @@ bool Game::MainCharacter::canMove(int dr, int dc) const
         return true;
     }
 
-    // if (mGame.mLevels[mGame.mCurLevel][mRow + dr][mCol + dc] == 'S')
-    // {
-    //     auto p = dynamic_cast<Snake *>(mGame.mGameObjects[mRow + dr][mCol + dc].get());
-    //     p->activate();
-    //     return false;
-    // }
-
     if (mGame.mLevels[mGame.mCurLevel][mRow + dr][mCol + dc] == 'D')
     {
         auto p = dynamic_cast<Door *>(mGame.mGameObjects[mRow + dr][mCol + dc].get());
@@ -910,9 +916,9 @@ bool Game::MainCharacter::getKey()
     return mHasKey;
 }
 
-void Game::MainCharacter::setCaught()
+void Game::MainCharacter::setCaught(bool b)
 {
-    mIsCaught = true;
+    mIsCaught = b;
 }
 
 bool Game::MainCharacter::isCaught()

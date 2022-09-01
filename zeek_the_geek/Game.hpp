@@ -213,7 +213,7 @@ class Game
             return mCol;
         }
 
-        void setCaught();
+        void setCaught(bool b);
         bool isCaught();
     };
 
@@ -221,6 +221,7 @@ private:
     sf::RenderWindow mWindow;
     MainCharacter mCharacter;
     vector<vector<string>> mLevels;
+    vector<string> mCurMap;
     vector<vector<unique_ptr<GameObject>>> mGameObjects;
     float mCellSize;
     float mCenterX;
@@ -239,6 +240,7 @@ private:
     void loadTiles(size_t level);
 
     void drawField();
+    void restart();
 
 public:
     Game();
