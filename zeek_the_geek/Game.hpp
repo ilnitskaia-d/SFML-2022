@@ -195,7 +195,7 @@ class Game
 
     public:
         MainCharacter(Game &game);
-
+        void reset();
         bool canMove(int dr, int dc) const;
         void move();
         void draw();
