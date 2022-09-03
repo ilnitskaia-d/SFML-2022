@@ -623,29 +623,29 @@ Game::Snake::Snake(Game &game, const string &path, int r, int c)
     {
         cout << "catn load left" << endl;
     }
-    mTextures.push_back(text);
-    mSprites[1].push_back(make_unique<sf::Sprite>(mTextures.back()));
+    mTextures.push_back(make_unique<sf::Texture>(text));
+    mSprites[1].push_back(make_unique<sf::Sprite>(*mTextures.back()));
 
     if (!text.loadFromFile("data/snake_up.png"))
     {
         cout << "catn load up" << endl;
     }
-    mTextures.push_back(text);
-    mSprites[1].push_back(make_unique<sf::Sprite>(mTextures.back()));
+    mTextures.push_back(make_unique<sf::Texture>(text));
+    mSprites[1].push_back(make_unique<sf::Sprite>(*mTextures.back()));
 
     if (!text.loadFromFile("data/snake_right.png"))
     {
         cout << "catn load right" << endl;
     }
-    mTextures.push_back(text);
-    mSprites[1].push_back(make_unique<sf::Sprite>(mTextures.back()));
+    mTextures.push_back(make_unique<sf::Texture>(text));
+    mSprites[1].push_back(make_unique<sf::Sprite>(*mTextures.back()));
 
     if (!text.loadFromFile("data/snake_down.png"))
     {
         cout << "catn load down" << endl;
     }
-    mTextures.push_back(text);
-    mSprites[1].push_back(make_unique<sf::Sprite>(mTextures.back()));
+    mTextures.push_back(make_unique<sf::Texture>(text));
+    mSprites[1].push_back(make_unique<sf::Sprite>(*mTextures.back()));
 
 }
 
@@ -680,15 +680,6 @@ void Game::Snake::draw()
             originX = mSprites[mAnimationIndex][mFrameIndex]->getLocalBounds().width / 2.0f;
             originY = mSprites[mAnimationIndex - 1][mFrameIndex]->getLocalBounds().height / 2.0f;
         }
-    }
-
-    float x = 300;
-    float y = 300;
-    for(auto &s : mSprites[1])
-    {
-        s->setPosition(x, y);
-        x += 32;
-        mGame.mWindow.draw(*s);
     }
 
     mSprites[mAnimationIndex][mFrameIndex]->setOrigin(originX, originY);

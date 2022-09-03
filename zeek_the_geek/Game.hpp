@@ -155,7 +155,7 @@ class Game
     class Snake : public GameObject
     {
         bool mActivated;
-        vector<sf::Texture> mTextures;
+        vector<unique_ptr<sf::Texture>> mTextures;
 
     public:
         Snake(Game &game, const string &path, int r, int c);
