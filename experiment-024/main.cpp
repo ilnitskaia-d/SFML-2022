@@ -71,8 +71,8 @@ sf::Vector2f loadTiles(vector<string> &curMap, vector<unique_ptr<sf::RectangleSh
                 walls.push_back(make_unique<sf::RectangleShape>());
                 walls.back()->setSize(sf::Vector2f(100, 100));
                 walls.back()->setPosition(x, y);
-                // walls.back()->setOutlineThickness(3);
-                // walls.back()->setOutlineColor(sf::Color::Magenta);
+                walls.back()->setOutlineThickness(3);
+                walls.back()->setOutlineColor(sf::Color::Magenta);
             }
             else if (curMap[r][c] == 'C')
             {
@@ -105,11 +105,13 @@ int main()
     sf::RenderWindow window(sf::VideoMode(1000, 1000), "SFML app");
     window.setVerticalSyncEnabled(true);
 
+    sf::Vector2f windowSize(window.getSize().x * 2.0f, window.getSize().y * 2.0f);
+
     vector<vector<string>> levels;
     loadLevels(levels);
 
-    float cX = window.getSize().x / 2.0f - 100 * (levels[0][0].size() / 2.0f);
-    float cY = window.getSize().y / 2.0f - 100 * (levels[0].size() / 2.0f);
+    float cX = windowSize.x / 2.0f - 100 * (levels[0][0].size() / 2.0f);
+    float cY = windowSize.y / 2.0f - 100 * (levels[0].size() / 2.0f);
 
     vector<unique_ptr<sf::RectangleShape>> walls;
     vector<unique_ptr<sf::FloatRect>> field;
@@ -122,6 +124,9 @@ int main()
     shape.setPosition(pos);
     shape.setFillColor(sf::Color::Red);
 
+    sf::View view(pos, sf::Vector2f(window.getSize()));
+    window.setView(view);
+
     while (window.isOpen())
     {
         sf::Event event;
@@ -133,38 +138,51 @@ int main()
             }
             else if (event.type == sf::Event::KeyPressed)
             {
-                int step = shape.getSize().x / 10;
+                int step = shape.getSize().x / 5;
 
                 if (event.key.code == sf::Keyboard::Left)
                 {
                     sf::FloatRect rect(sf::Vector2f(shapeX - step, shapeY), shape.getSize());
-                    if (shapeX - step > shape.getSize().x && shapeX - step < window.getSize().x - shape.getSize().x && checkWall(rect, field))
+                    if (shapeX - step > shape.getSize().x && shapeX - step < windowSize.x - shape.getSize().x && checkWall(rect, field))
                     {
                         shapeX -= step;
+                        if (shapeX - step > view.getSize().x / 2 && shapeX - step < windowSize.x - view.getSize().x / 2)
+                            view.move(-step, 0);
+                    }
+                    else 
+                    {
+                        cout << "cant move "<< endl;
+                        cout << shapeX << endl;
                     }
                 }
                 else if (event.key.code == sf::Keyboard::Right)
                 {
                     sf::FloatRect rect(sf::Vector2f(shapeX + step, shapeY), shape.getSize());
-                    if (shapeX + step > shape.getSize().x && shapeX + step < window.getSize().x - shape.getSize().x && checkWall(rect, field))
+                    if (shapeX + step > shape.getSize().x && shapeX + step < windowSize.x - shape.getSize().x && checkWall(rect, field))
                     {
                         shapeX += step;
+                        if (shapeX + step > view.getSize().x / 2 && shapeX + step < windowSize.x - view.getSize().x / 2)
+                            view.move(step, 0);
                     }
                 }
                 else if (event.key.code == sf::Keyboard::Up)
                 {
                     sf::FloatRect rect(sf::Vector2f(shapeX, shapeY - step), shape.getSize());
-                    if (shapeY - step > 0 && shapeY - step < window.getSize().x - shape.getSize().y && checkWall(rect, field))
+                    if (shapeY - step > 0 && shapeY - step < windowSize.x - shape.getSize().y && checkWall(rect, field))
                     {
                         shapeY -= step;
+                        if (shapeY - step > view.getSize().y / 2 && shapeY - step < windowSize.y - view.getSize().y / 2)
+                            view.move(0, -step);
                     }
                 }
                 else if (event.key.code == sf::Keyboard::Down)
                 {
                     sf::FloatRect rect(sf::Vector2f(shapeX, shapeY + step), shape.getSize());
-                    if (shapeY + step > 0 && shapeY + step < window.getSize().y - shape.getSize().y && checkWall(rect, field))
+                    if (shapeY + step > 0 && shapeY + step < windowSize.y - shape.getSize().y && checkWall(rect, field))
                     {
                         shapeY += step;
+                        if (shapeY + step > view.getSize().y / 2 && shapeY + step < windowSize.y- view.getSize().y / 2)
+                            view.move(0, step);
                     }
                 }
                 shape.setPosition(sf::Vector2f(shapeX, shapeY));
@@ -172,6 +190,7 @@ int main()
         }
 
         window.clear();
+        window.setView(view);
         window.draw(shape);
         for (const auto &w : walls)
         {
