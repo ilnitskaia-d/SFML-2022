@@ -8,6 +8,21 @@
 
 using namespace std;
 
+class Enemy
+{
+    sf::Vector2f mCoords;
+    sf::Vector2f mDir;
+    const float dVal = 10;
+    vector<unique_ptr<sf::FloatRect>> &mField;
+
+    Enemy(int row, int col, vector<unique_ptr<sf::FloatRect>> &field, float cX, float cY)
+        : mField(field)
+    {
+        mCoords.x = cX + 100 * col;
+        mCoords.y = cY + 100 * row;
+    }
+};
+
 bool loadLevels(vector<vector<string>> &levels)
 {
     std::fstream level("data/levels.data");
@@ -149,9 +164,9 @@ int main()
                         if (shapeX - step > view.getSize().x / 2 && shapeX - step < windowSize.x - view.getSize().x / 2)
                             view.move(-step, 0);
                     }
-                    else 
+                    else
                     {
-                        cout << "cant move "<< endl;
+                        cout << "cant move " << endl;
                         cout << shapeX << endl;
                     }
                 }
@@ -181,7 +196,7 @@ int main()
                     if (shapeY + step > 0 && shapeY + step < windowSize.y - shape.getSize().y && checkWall(rect, field))
                     {
                         shapeY += step;
-                        if (shapeY + step > view.getSize().y / 2 && shapeY + step < windowSize.y- view.getSize().y / 2)
+                        if (shapeY + step > view.getSize().y / 2 && shapeY + step < windowSize.y - view.getSize().y / 2)
                             view.move(0, step);
                     }
                 }
