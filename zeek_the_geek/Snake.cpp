@@ -46,7 +46,7 @@ Game::Snake::Snake(Game &game, const string &path, int r, int c)
     for (int j = 0; j < nFramesX; ++j)
     {
         mSprites[2].push_back(make_unique<sf::Sprite>(*mTextures.back(), sf::IntRect(j * frameSize, 0, frameSize, frameSize)));
-        mSprites[2].back()->setScale(4, 4);
+        mSprites[2].back()->setScale(mGame.mScale, mGame.mScale);
     }
 }
 
@@ -84,7 +84,7 @@ void Game::Snake::draw()
     }
 
     mSprites[mAnimationIndex][mFrameIndex]->setOrigin(originX, originY);
-    mSprites[mAnimationIndex][mFrameIndex]->setScale(4, 4);
+    mSprites[mAnimationIndex][mFrameIndex]->setScale(mGame.mScale, mGame.mScale);
     mSprites[mAnimationIndex][mFrameIndex]->setPosition(mX, mY);
     mGame.mWindow.draw(*mSprites[mAnimationIndex][mFrameIndex]);
     if (mActivated)

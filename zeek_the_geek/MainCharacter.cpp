@@ -20,7 +20,6 @@ Game::MainCharacter::MainCharacter(Game &game)
         for (int j = 0; j < 4; ++j)
         {
             mSprites[i].push_back(make_unique<sf::Sprite>(mTexture, sf::IntRect(j * frameW, i * frameH, frameW, frameH)));
-            mSprites[i].back()->setScale(4, 4);
         }
     }
 }
@@ -41,6 +40,13 @@ void Game::MainCharacter::setCoords(int row, int col)
 {
     mRow = row;
     mCol = col;
+    for (auto const &v : mSprites)
+    {
+        for (auto &p : v)
+        {
+            p->setScale(mGame.mScale, mGame.mScale);
+        }
+    }
     float x = (mGame.mWindow.getSize().x / 2.0f - mSprites[0][0]->getGlobalBounds().width * (mGame.mCurMap[0].size() / 2.0f)) + mSprites[0][0]->getGlobalBounds().width * col;
     float y = (mGame.mWindow.getSize().y / 2.0f - mSprites[0][0]->getGlobalBounds().width * (mGame.mCurMap.size() / 2.0f)) + mSprites[0][0]->getGlobalBounds().width * row;
     mCoords = sf::Vector2f(x, y);

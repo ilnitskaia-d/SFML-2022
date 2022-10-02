@@ -39,17 +39,6 @@ bool Game::Apple::move()
             mDirection.x = 0;
             mDirection.y = 0;
             curState = State::Standing;
-            cout << endl
-                 << "------------------" << endl;
-            for (auto const &v : mGame.mCurMap)
-            {
-                for (auto const &c : v)
-                {
-                    cout << c;
-                }
-                cout << endl;
-            }
-            cout << "------------------" << endl;
         }
         mSprites[mAnimationIndex][mFrameIndex]->move(mDirection);
     }

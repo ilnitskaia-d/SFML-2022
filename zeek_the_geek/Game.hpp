@@ -246,6 +246,7 @@ private:
     void restart();
 
 public:
+    float mScale;
     Game();
     void run();
 };

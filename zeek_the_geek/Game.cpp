@@ -9,6 +9,8 @@ Game::Game()
     : mWindow(sf::VideoMode::getDesktopMode(), "SFML app", sf::Style::Fullscreen), mCharacter(*this), mScore(0), mCurLevel(0)
 {
     mWindow.setVerticalSyncEnabled(true);
+    mFloorText.loadFromFile("data/floor_0.png");
+    mFloorSprite.setTexture(mFloorText);
 
     if (!loadLevels())
     {
@@ -16,14 +18,9 @@ Game::Game()
         exit(1);
     }
 
-    mFloorText.loadFromFile("data/floor_0.png");
-    mFloorSprite.setTexture(mFloorText);
-    mFloorSprite.setScale(4, 4);
-    mFloorSprite.setOrigin(mFloorSprite.getLocalBounds().width / 2, mFloorSprite.getLocalBounds().height / 2);
-
-    mCellSize = mFloorSprite.getGlobalBounds().width;
-
     loadTiles(0);
+    mFloorSprite.setScale(mScale, mScale);
+    mFloorSprite.setOrigin(mFloorSprite.getLocalBounds().width / 2, mFloorSprite.getLocalBounds().height / 2);
 
     mFont.loadFromFile("data/FONT.TTF");
     mScoreBar.setFont(mFont);
@@ -59,6 +56,7 @@ bool Game::loadLevels()
 
         if (!std::getline(level, line))
         {
+            cout << "1 problem" << endl;
             return false;
         }
 
@@ -66,6 +64,7 @@ bool Game::loadLevels()
         std::istringstream sinp(line);
         if (!(sinp >> h))
         {
+            cout << "2 problem" << endl;
             return false;
         }
 
@@ -74,6 +73,7 @@ bool Game::loadLevels()
         {
             if (!std::getline(level, line))
             {
+                cout << "3 problem" << endl;
                 return false;
             }
             curLevel.push_back(line);
@@ -87,10 +87,26 @@ bool Game::loadLevels()
 
 void Game::loadTiles(size_t level)
 {
-    mCenterX = mWindow.getSize().x / 2.0f - mCellSize * (mLevels[mCurLevel][0].size() / 2.0f);
-    mCenterY = mWindow.getSize().y / 2.0f - mCellSize * (mLevels[mCurLevel].size() / 2.0f);
 
     mCurMap = mLevels[level];
+
+    if (mWindow.getSize().y / mCurMap.size() < mWindow.getSize().x / mCurMap[0].size())
+    {
+        mScale = (float)mWindow.getSize().y / ((float)mCurMap.size() * 32.0f);
+        cout << mWindow.getSize().y << endl;
+        cout << mCurMap.size() << endl;
+    }
+    else
+    {
+        mScale = (float)mWindow.getSize().x / ((float)mCurMap[0].size() * 32.0f);
+        cout << mWindow.getSize().x << endl;
+        cout << mCurMap[0].size() << endl;
+    }
+
+    mCellSize = mFloorSprite.getLocalBounds().height * mScale;
+
+    mCenterX = mWindow.getSize().x / 2.0f - mCellSize * (mLevels[mCurLevel][0].size() / 2.0f);
+    mCenterY = mWindow.getSize().y / 2.0f - mCellSize * (mLevels[mCurLevel].size() / 2.0f);
 
     mGameObjects.clear();
     mGameObjects.resize(mCurMap.size());
@@ -228,7 +244,7 @@ Game::GameObject::GameObject(Game &game, const string &path, int r, int c)
         for (int j = 0; j < nFramesX; ++j)
         {
             mSprites[i].push_back(make_unique<sf::Sprite>(mTexture, sf::IntRect(j * frameSize, i * frameSize, frameSize, frameSize)));
-            mSprites[i].back()->setScale(4, 4);
+            mSprites[i].back()->setScale(mGame.mScale, mGame.mScale);
         }
     }
 
