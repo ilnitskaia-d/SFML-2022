@@ -14,7 +14,8 @@ class Game
         enum State
         {
             Moving,
-            Standing
+            Standing,
+            Sleeping
         };
 
         Game &mGame;
@@ -23,6 +24,8 @@ class Game
 
         int mRow;
         int mCol;
+        int dRow;
+        int dCol;
         float mX;
         float mY;
 
@@ -186,7 +189,7 @@ class Game
 
         State curState;
         sf::Vector2f mDirection;
-        const int MaxCount = 11;
+        const int MaxCount = 15;
         int mNumOfSteps;
         int mDistOfSteps;
 

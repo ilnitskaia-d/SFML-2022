@@ -117,7 +117,6 @@ class Game
                 {
                     rect.left -= mDir.x;
                     rect.top -= mDir.y;
-
                     setDir();
                 }
                 else
