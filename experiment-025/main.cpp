@@ -16,27 +16,29 @@ class Game
     class GameObject
     {
         Game &mGame;
-        bool mIsWall;
         float mX;
         float mY;
         size_t mR;
         size_t mC;
         sf::RectangleShape shape;
+        sf::FloatRect rect;
 
     public:
-        GameObject(Game &game, size_t r, size_t c, bool isWall)
-            : mGame(game), mIsWall(isWall)
+        GameObject(Game &game, size_t r, size_t c)
+            : mGame(game)
         {
-            mX = 100 * r;
-            mY = 100 * c;
+            mX = 100 * c;
+            mY = 100 * r;
             shape.setFillColor(sf::Color::White);
             shape.setPosition(mX, mY);
             shape.setSize(sf::Vector2f(100, 100));
+
+            rect = sf::FloatRect(shape.getPosition(), shape.getSize());
         }
 
-        bool isWall() const
+        sf::FloatRect getRect()
         {
-            return mIsWall;
+            return rect;
         }
 
         void draw(sf::RenderWindow &window)
@@ -54,6 +56,7 @@ class Game
         size_t mC;
         sf::RectangleShape shape;
         sf::Vector2f mDir;
+        sf::FloatRect rect;
 
     public:
         Enemy(Game &game)
@@ -69,8 +72,12 @@ class Game
             mR = r;
             mC = c;
 
-            mX = 100 * r;
-            mY = 100 * c;
+            mX = 100 * c;
+            mY = 100 * r;
+
+            shape.setPosition(mX, mY);
+
+            rect = sf::FloatRect(shape.getPosition(), shape.getSize());
         }
 
         void setDir()
@@ -78,23 +85,50 @@ class Game
             vector<sf::Vector2f> posDirs;
             vector<int> dRow = {-1, 0, 1, 0};
             vector<int> dCol = {0, 1, 0, -1};
+
             for (int i = 0; i < 4; i++)
             {
                 int tR = mR + dRow[i];
                 int tC = mC + dCol[i];
-                if (!mGame.mGameObjects[tR][tC]->isWall())
+
+                if (!mGame.mGameObjects[tR][tC])
                 {
-                    posDirs.emplace_back(dRow[i] * 2, dCol[i] * 2);
+                    posDirs.emplace_back(dCol[i], dRow[i]);
                 }
             }
+
             int n = Random::get(0, int(posDirs.size() - 1));
 
             mDir = posDirs[n];
+            shape.move(mDir);
         }
 
         void move()
         {
-            shape.move(mDir);
+            rect.left += mDir.x;
+            rect.top += mDir.y;
+
+            mC = shape.getPosition().x / 100;
+            mR = shape.getPosition().y / 100;
+
+            if (mGame.mGameObjects[mR + mDir.y][mC + mDir.x])
+            {
+                if (rect.intersects(mGame.mGameObjects[mR + mDir.y][mC + mDir.x]->getRect()))
+                {
+                    rect.left -= mDir.x;
+                    rect.top -= mDir.y;
+
+                    setDir();
+                }
+                else
+                {
+                    shape.move(mDir);
+                }
+            }
+            else
+            {
+                shape.move(mDir);
+            }
         }
 
         void draw(sf::RenderWindow &window)
@@ -110,7 +144,7 @@ class Game
 
 public:
     Game()
-        : enemy(*this), window(sf::VideoMode(800, 600), "SFML app")
+        : enemy(*this), window(sf::VideoMode::getDesktopMode(), "SFML app", sf::Style::Fullscreen)
     {
         loadLevels();
         loadTiles(0);
@@ -165,27 +199,25 @@ public:
 
         mGameObjects.resize(mLevels[level].size());
 
-        cout << mGameObjects.size() << endl;
-
         for (size_t r = 0; r < mLevels[level].size(); r++)
         {
             for (size_t c = 0; c < mLevels[level][r].size(); c++)
             {
-                cout << mLevels[level][r][c];
                 if (mLevels[level][r][c] == 'W')
                 {
-                    mGameObjects[r].push_back(make_unique<GameObject>(*this, r, c, true));
+                    mGameObjects[r].push_back(make_unique<GameObject>(*this, r, c));
                 }
                 else if (mLevels[level][r][c] == 'E')
                 {
                     enemy.setPos(r, c);
+                    mGameObjects[r].push_back(nullptr);
                 }
                 else
                 {
-                    mGameObjects[r].push_back(make_unique<GameObject>(*this, r, c, false));
+                    // mGameObjects[r].push_back(make_unique<GameObject>(*this, r, c, false));
+                    mGameObjects[r].push_back(nullptr);
                 }
             }
-            cout << endl;
         }
         enemy.setDir();
     }
