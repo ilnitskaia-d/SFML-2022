@@ -227,8 +227,6 @@ private:
     vector<string> mCurMap;
     vector<vector<unique_ptr<GameObject>>> mGameObjects;
     float mCellSize;
-    float mCenterX;
-    float mCenterY;
 
     sf::Font mFont;
     sf::Text mScoreBar;
@@ -246,6 +244,8 @@ private:
     void restart();
 
 public:
+    float mCenterX;
+    float mCenterY;
     float mScale;
     Game();
     void run();

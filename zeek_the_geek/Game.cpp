@@ -87,26 +87,26 @@ bool Game::loadLevels()
 
 void Game::loadTiles(size_t level)
 {
-
     mCurMap = mLevels[level];
 
     if (mWindow.getSize().y / mCurMap.size() < mWindow.getSize().x / mCurMap[0].size())
     {
-        mScale = (float)mWindow.getSize().y / ((float)mCurMap.size() * 32.0f);
-        cout << mWindow.getSize().y << endl;
-        cout << mCurMap.size() << endl;
+        mScale = (float)mWindow.getSize().y / (((float)(mCurMap.size() + 2)) * 32.0f);
     }
     else
     {
-        mScale = (float)mWindow.getSize().x / ((float)mCurMap[0].size() * 32.0f);
-        cout << mWindow.getSize().x << endl;
-        cout << mCurMap[0].size() << endl;
+        mScale = (float)mWindow.getSize().x / (((float)(mCurMap[0].size() + 2)) * 32.0f);
     }
 
     mCellSize = mFloorSprite.getLocalBounds().height * mScale;
+    cout << mCellSize << endl;
+    cout << mCurMap[0].size() << endl;
+    // mCenterX = ((mCellSize * ((mCurMap[0].size() + 2) / 2.0f)) - mWindow.getSize().x / 2.0f) + mCellSize / 2.0f;
+    // mCenterY = ((mCellSize * ((mCurMap.size() + 2) / 2.0f)) - mWindow.getSize().y / 2.0f) + mCellSize / 2.0f;
+    mCenterX = (mWindow.getSize().x / 2.0f - (mCellSize * ((mCurMap[0].size() + 2) / 2.0f))) + mCellSize * 1.5;
+    mCenterY = (mWindow.getSize().y / 2.0f - (mCellSize * ((mCurMap.size() + 2) / 2.0f))) + mCellSize * 1.5;
 
-    mCenterX = mWindow.getSize().x / 2.0f - mCellSize * (mLevels[mCurLevel][0].size() / 2.0f);
-    mCenterY = mWindow.getSize().y / 2.0f - mCellSize * (mLevels[mCurLevel].size() / 2.0f);
+    cout << mCenterX << endl;
 
     mGameObjects.clear();
     mGameObjects.resize(mCurMap.size());
@@ -249,8 +249,8 @@ Game::GameObject::GameObject(Game &game, const string &path, int r, int c)
     }
 
     mSprites[0][0]->setOrigin(frameSize / 2.0f, frameSize / 2.0f);
-    mX = mGame.mCenterX + frameSize * 4 * c;
-    mY = mGame.mCenterY + frameSize * 4 * r;
+    mX = mGame.mCenterX + frameSize * mGame.mScale * c;
+    mY = mGame.mCenterY + frameSize * mGame.mScale * r;
     mSprites[0][0]->setPosition(sf::Vector2f(mX, mY));
 }
 

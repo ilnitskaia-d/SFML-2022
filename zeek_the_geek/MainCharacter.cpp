@@ -47,8 +47,8 @@ void Game::MainCharacter::setCoords(int row, int col)
             p->setScale(mGame.mScale, mGame.mScale);
         }
     }
-    float x = (mGame.mWindow.getSize().x / 2.0f - mSprites[0][0]->getGlobalBounds().width * (mGame.mCurMap[0].size() / 2.0f)) + mSprites[0][0]->getGlobalBounds().width * col;
-    float y = (mGame.mWindow.getSize().y / 2.0f - mSprites[0][0]->getGlobalBounds().width * (mGame.mCurMap.size() / 2.0f)) + mSprites[0][0]->getGlobalBounds().width * row;
+    float x = mGame.mCenterX + mSprites[0][0]->getGlobalBounds().width * col;
+    float y = mGame.mCenterY + mSprites[0][0]->getGlobalBounds().width * row;
     mCoords = sf::Vector2f(x, y);
 }
 
