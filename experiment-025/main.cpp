@@ -47,6 +47,116 @@ class Game
         }
     };
 
+    class Player
+    {
+        Game &mGame;
+        float mX;
+        float mY;
+        size_t mR;
+        size_t mC;
+        sf::RectangleShape shape;
+        sf::Vector2f mDir;
+        sf::FloatRect rect;
+
+    public:
+        Player(Game &game)
+            : mGame(game)
+        {
+            shape.setFillColor(sf::Color::Cyan);
+            shape.setSize(sf::Vector2f(100, 100));
+        }
+
+        void setPos(size_t r, size_t c)
+        {
+            mR = r;
+            mC = c;
+
+            mX = 100 * c;
+            mY = 100 * r;
+
+            shape.setPosition(mX, mY);
+
+            rect = sf::FloatRect(shape.getPosition(), shape.getSize());
+        }
+
+        void draw(sf::RenderWindow &window)
+        {
+            window.draw(shape);
+        }
+
+        void setDir()
+        {
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left))
+            {
+                mDir.x = -1;
+                mDir.y = 0;
+            }
+            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right))
+            {
+                mDir.x = 1;
+                mDir.y = 0;
+            }
+            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up))
+            {
+                mDir.x = 0;
+                mDir.y = -1;
+            }
+            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down))
+            {
+                mDir.x = 0;
+                mDir.y = 1;
+            }
+            else
+            {
+                mDir.x = 0;
+                mDir.y = 0;
+            }
+        }
+
+        void move()
+        {
+            rect.left += mDir.x;
+            rect.top += mDir.y;
+
+            mC = (rect.left + 1) / 100;
+            mR = (rect.top + 1) / 100;
+
+            bool canMove = true;
+            for (auto const &v : mGame.mGameObjects)
+            {
+                for (auto const &p : v)
+                {
+                    if (p)
+                    {
+                        if (rect.intersects(p->getRect()))
+                        {
+                            canMove = false;
+                        }
+                    }
+                }
+            }
+
+            if (canMove)
+            {
+                shape.move(mDir);
+            }
+            else
+            {
+                rect.left -= mDir.x;
+                rect.top -= mDir.y;
+                mC = (rect.left + 1) / 100;
+                mR = (rect.top + 1) / 100;
+            }
+            for (const auto &e : mGame.mEnemy)
+            {
+                if (rect.intersects(e->getRect()))
+                {
+                    shape.setFillColor(sf::Color::Green);
+                }
+            }
+        }
+    };
+
     class Enemy
     {
         Game &mGame;
@@ -59,18 +169,11 @@ class Game
         sf::FloatRect rect;
 
     public:
-        Enemy(Game &game)
-            : mGame(game)
+        Enemy(Game &game, size_t r, size_t c)
+            : mGame(game), mR(r), mC(c)
         {
             shape.setFillColor(sf::Color::Red);
-            shape.setPosition(mX, mY);
             shape.setSize(sf::Vector2f(100, 100));
-        }
-
-        void setPos(int r, int c)
-        {
-            mR = r;
-            mC = c;
 
             mX = 100 * c;
             mY = 100 * r;
@@ -103,13 +206,18 @@ class Game
             shape.move(mDir);
         }
 
+        sf::FloatRect getRect()
+        {
+            return rect;
+        }
+
         void move()
         {
             rect.left += mDir.x;
             rect.top += mDir.y;
 
-            mC = shape.getPosition().x / 100;
-            mR = shape.getPosition().y / 100;
+            mC = (rect.left + 1) / 100;
+            mR = (rect.top + 1) / 100;
 
             if (mGame.mGameObjects[mR + mDir.y][mC + mDir.x])
             {
@@ -117,6 +225,8 @@ class Game
                 {
                     rect.left -= mDir.x;
                     rect.top -= mDir.y;
+                    mC = (rect.left + 1) / 100;
+                    mR = (rect.top + 1) / 100;
                     setDir();
                 }
                 else
@@ -138,12 +248,13 @@ class Game
 
     vector<vector<unique_ptr<GameObject>>> mGameObjects;
     vector<vector<string>> mLevels;
-    Enemy enemy;
+    vector<unique_ptr<Enemy>> mEnemy;
+    Player mPlayer;
     sf::RenderWindow window;
 
 public:
     Game()
-        : enemy(*this), window(sf::VideoMode::getDesktopMode(), "SFML app", sf::Style::Fullscreen)
+        : mPlayer(*this), window(sf::VideoMode::getDesktopMode(), "SFML app", sf::Style::Fullscreen)
     {
         loadLevels();
         loadTiles(0);
@@ -208,17 +319,24 @@ public:
                 }
                 else if (mLevels[level][r][c] == 'E')
                 {
-                    enemy.setPos(r, c);
+                    mEnemy.push_back(make_unique<Enemy>(*this, r, c));
+                    mGameObjects[r].push_back(nullptr);
+                }
+                else if (mLevels[level][r][c] == 'P')
+                {
+                    mPlayer.setPos(r, c);
                     mGameObjects[r].push_back(nullptr);
                 }
                 else
                 {
-                    // mGameObjects[r].push_back(make_unique<GameObject>(*this, r, c, false));
                     mGameObjects[r].push_back(nullptr);
                 }
             }
         }
-        enemy.setDir();
+        for (auto const &e : mEnemy)
+        {
+            e->setDir();
+        }
     }
 
     void run()
@@ -233,9 +351,18 @@ public:
                 {
                     window.close();
                 }
+                else
+                {
+                    mPlayer.setDir();
+                    mPlayer.move();
+                }
             }
 
-            enemy.move();
+            for (const auto &e : mEnemy)
+            {
+                e->move();
+            }
+
             window.clear();
             for (const auto &v : mGameObjects)
             {
@@ -243,7 +370,6 @@ public:
                 {
                     if (p)
                     {
-                        if (p->isWall())
                         {
                             p->draw(window);
                         }
@@ -251,7 +377,13 @@ public:
                 }
             }
 
-            enemy.draw(window);
+            for (const auto &e : mEnemy)
+            {
+                e->draw(window);
+            }
+
+            mPlayer.draw(window);
+
             window.display();
         }
     }
