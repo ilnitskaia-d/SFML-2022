@@ -8,21 +8,6 @@
 
 using namespace std;
 
-class Enemy
-{
-    sf::Vector2f mCoords;
-    sf::Vector2f mDir;
-    const float dVal = 10;
-    vector<unique_ptr<sf::FloatRect>> &mField;
-
-    Enemy(int row, int col, vector<unique_ptr<sf::FloatRect>> &field, float cX, float cY)
-        : mField(field)
-    {
-        mCoords.x = cX + 100 * col;
-        mCoords.y = cY + 100 * row;
-    }
-};
-
 bool loadLevels(vector<vector<string>> &levels)
 {
     std::fstream level("data/levels.data");

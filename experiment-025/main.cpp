@@ -15,9 +15,10 @@ class Game
 {
     class GameObject
     {
+    public:
         Game &mGame;
-        float mX;
-        float mY;
+        int mX;
+        int mY;
         size_t mR;
         size_t mC;
         sf::RectangleShape shape;
@@ -41,17 +42,136 @@ class Game
             return rect;
         }
 
-        void draw(sf::RenderWindow &window)
+        virtual void draw(sf::RenderWindow &window)
         {
             window.draw(shape);
+        }
+    };
+
+    class Explosion : public GameObject
+    {
+        int mCounter;
+        int mFrameIndex;
+        size_t mR;
+        size_t mC;
+        int mX;
+        int mY;
+        sf::Texture mTexture;
+        vector<unique_ptr<sf::Sprite>> mSprites;
+        sf::FloatRect mRect;
+
+    public:
+        Explosion(Game &game, size_t r, size_t c)
+            : GameObject(game, r, c), mCounter(0), mFrameIndex(0), mR(r), mC(c)
+        {
+            if (!mTexture.loadFromFile("data/explosion.png"))
+            {
+                std::cout << "failed to load from file" << std::endl;
+                exit(1);
+            }
+
+            int frameW = mTexture.getSize().x / 4;
+
+            for (int j = 0; j < 4; ++j)
+            {
+                mSprites.push_back(make_unique<sf::Sprite>(mTexture, sf::IntRect(j * frameW, 0, frameW, 32)));
+                mSprites.back()->setScale(3, 3);
+                mSprites.back()->setPosition(mC * 100, mR * 100);
+            }
+
+            // mX = mC * mSprites[mFrameIndex]->getGlobalBounds().width;
+            // mY = mR * mSprites[mFrameIndex]->getGlobalBounds().height;
+        }
+
+        sf::FloatRect getSprite() const
+        {
+            return mSprites.back()->getGlobalBounds();
+        }
+
+        void draw(sf::RenderWindow &window) override
+        {
+            // mSprites[mFrameIndex]->setOrigin(mSprites[mFrameIndex]->getLocalBounds().width / 2.0f,
+            //                                  mSprites[mFrameIndex]->getLocalBounds().height / 2.0f);
+
+            auto p = dynamic_cast<Explosion *>(mGame.mGameObjects[mR][mC].get());
+            for (auto &e : mGame.mEnemy)
+            {
+                if (e)
+                {
+                    if (e->getRect().intersects(p->getSprite()))
+                    {
+                        e->kill();
+                        e.release();
+                    }
+                }
+            }
+
+            window.draw(*mSprites[mFrameIndex]);
+            ++mCounter;
+            if (mCounter == 100)
+            {
+                mCounter = 0;
+                mFrameIndex = (mFrameIndex + 1);
+                if (mFrameIndex == (int)mSprites.size())
+                {
+                    mGame.mGameObjects[mR][mC].release();
+                }
+            }
+        }
+    };
+
+    class Bomb : public GameObject
+    {
+        int mCounter;
+        int mFrameIndex;
+        int mR;
+        int mC;
+        sf::Texture mTexture;
+        vector<unique_ptr<sf::Sprite>> mSprites;
+
+    public:
+        Bomb(Game &game, size_t r, size_t c)
+            : GameObject(game, r, c), mCounter(0), mFrameIndex(0), mR(r), mC(c)
+        {
+            if (!mTexture.loadFromFile("data/bomb.png"))
+            {
+                std::cout << "failed to load from file" << std::endl;
+                exit(1);
+            }
+
+            int frameW = mTexture.getSize().x / 6;
+
+            for (int j = 0; j < 6; ++j)
+            {
+                mSprites.push_back(make_unique<sf::Sprite>(mTexture, sf::IntRect(j * frameW, 0, frameW, 32)));
+                mSprites.back()->setScale(3, 3);
+                mSprites.back()->setPosition(mC * 100, mR * 100);
+            }
+        }
+
+        void draw(sf::RenderWindow &window) override
+        {
+
+            window.draw(*mSprites[mFrameIndex]);
+            ++mCounter;
+            if (mCounter == 200)
+            {
+                mCounter = 0;
+                mFrameIndex = (mFrameIndex + 1);
+                if (mFrameIndex == (int)mSprites.size())
+                {
+                    mGame.setExplosion(mR, mC, 2);
+                    mGame.mGameObjects[mR][mC].release();
+                }
+            }
         }
     };
 
     class Player
     {
         Game &mGame;
-        float mX;
-        float mY;
+        int mX;
+        int mY;
         size_t mR;
         size_t mC;
         sf::RectangleShape shape;
@@ -86,6 +206,11 @@ class Game
 
         void setDir()
         {
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Enter))
+            {
+                mGame.setBomb((size_t)((shape.getPosition().y + shape.getSize().y / 2) / shape.getSize().y) + mDir.y,
+                              (size_t)((shape.getPosition().x + shape.getSize().x / 2) / shape.getSize().x) + mDir.x);
+            }
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left))
             {
                 mDir.x = -1;
@@ -149,9 +274,12 @@ class Game
             }
             for (const auto &e : mGame.mEnemy)
             {
-                if (rect.intersects(e->getRect()))
+                if (e)
                 {
-                    shape.setFillColor(sf::Color::Green);
+                    if (rect.intersects(e->getRect()))
+                    {
+                        shape.setFillColor(sf::Color::Green);
+                    }
                 }
             }
         }
@@ -167,10 +295,11 @@ class Game
         sf::RectangleShape shape;
         sf::Vector2f mDir;
         sf::FloatRect rect;
+        bool isKilled;
 
     public:
         Enemy(Game &game, size_t r, size_t c)
-            : mGame(game), mR(r), mC(c)
+            : mGame(game), mR(r), mC(c), isKilled(false)
         {
             shape.setFillColor(sf::Color::Red);
             shape.setSize(sf::Vector2f(100, 100));
@@ -194,7 +323,9 @@ class Game
                 int tR = mR + dRow[i];
                 int tC = mC + dCol[i];
 
-                if (!mGame.mGameObjects[tR][tC])
+                auto p = dynamic_cast<Explosion *>(mGame.mGameObjects[tR][tC].get());
+                auto p1 = dynamic_cast<Bomb *>(mGame.mGameObjects[tR][tC].get());
+                if (!mGame.mGameObjects[tR][tC] || p != nullptr || p1 != nullptr)
                 {
                     posDirs.emplace_back(dCol[i], dRow[i]);
                 }
@@ -211,6 +342,11 @@ class Game
             return rect;
         }
 
+        void kill()
+        {
+            isKilled = true;
+        }
+
         void move()
         {
             rect.left += mDir.x;
@@ -219,15 +355,25 @@ class Game
             mC = (rect.left + 1) / 100;
             mR = (rect.top + 1) / 100;
 
+            auto p = dynamic_cast<Explosion *>(mGame.mGameObjects[mR + mDir.y][mC + mDir.x].get());
+            auto p1 = dynamic_cast<Bomb *>(mGame.mGameObjects[mR + mDir.y][mC + mDir.x].get());
+
             if (mGame.mGameObjects[mR + mDir.y][mC + mDir.x])
             {
-                if (rect.intersects(mGame.mGameObjects[mR + mDir.y][mC + mDir.x]->getRect()))
+                if (p == nullptr && p1 == nullptr)
                 {
-                    rect.left -= mDir.x;
-                    rect.top -= mDir.y;
-                    mC = (rect.left + 1) / 100;
-                    mR = (rect.top + 1) / 100;
-                    setDir();
+                    if (rect.intersects(mGame.mGameObjects[mR + mDir.y][mC + mDir.x]->getRect()))
+                    {
+                        rect.left -= mDir.x;
+                        rect.top -= mDir.y;
+                        mC = (rect.left + 1) / 100;
+                        mR = (rect.top + 1) / 100;
+                        setDir();
+                    }
+                    else
+                    {
+                        shape.move(mDir);
+                    }
                 }
                 else
                 {
@@ -339,6 +485,34 @@ public:
         }
     }
 
+    void setBomb(size_t r, size_t c)
+    {
+        mGameObjects[r][c].reset(new Bomb(*this, r, c));
+    }
+
+    void setExplosion(size_t r, size_t c, int length)
+    {
+        vector<int> dRow = {-1, 0, 1, 0};
+        vector<int> dCol = {0, 1, 0, -1};
+
+        for (int i = 0; i < 4; ++i)
+        {
+            int tR = r;
+            int tC = c;
+            for (int j = 0; j < length; ++j)
+            {
+                if (mGameObjects[tR + dRow[i]][tC + dCol[i]])
+                {
+                    break;
+                }
+                mGameObjects[tR + dRow[i]][tC + dCol[i]].reset(new Explosion(*this, tR + dRow[i], tC + dCol[i]));
+
+                tR += dRow[i];
+                tC += dCol[i];
+            }
+        }
+    }
+
     void run()
     {
 
@@ -360,7 +534,10 @@ public:
 
             for (const auto &e : mEnemy)
             {
-                e->move();
+                if (e)
+                {
+                    e->move();
+                }
             }
 
             window.clear();
@@ -379,7 +556,10 @@ public:
 
             for (const auto &e : mEnemy)
             {
-                e->draw(window);
+                if (e)
+                {
+                    e->draw(window);
+                }
             }
 
             mPlayer.draw(window);
