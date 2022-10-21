@@ -30,6 +30,22 @@ void Game::Bomb::draw()
                 if (mGame.mCurMap[mRow][mCol - 1] != '.' && mGame.mCurMap[mRow][mCol - 1] != 'W')
                 {
                     mGame.mGameObjects[mRow][mCol - 1].release();
+                    mGame.mCurMap[mRow][mCol - 1] = '.';
+                }
+                else if (mGame.mCurMap[mRow][mCol + 1] != '.' && mGame.mCurMap[mRow][mCol + 1] != 'W')
+                {
+                    mGame.mGameObjects[mRow][mCol + 1].release();
+                    mGame.mCurMap[mRow][mCol + 1] = '.';
+                }
+                else if (mGame.mCurMap[mRow - 1][mCol] != '.' && mGame.mCurMap[mRow - 1][mCol] != 'W')
+                {
+                    mGame.mGameObjects[mRow - 1][mCol].release();
+                    mGame.mCurMap[mRow - 1][mCol] = '.';
+                }
+                else if (mGame.mCurMap[mRow + 1][mCol] != '.' && mGame.mCurMap[mRow + 1][mCol] != 'W')
+                {
+                    mGame.mGameObjects[mRow + 1][mCol].release();
+                    mGame.mCurMap[mRow + 1][mCol] = '.';
                 }
                 mGame.mGameObjects[mRow][mCol].release();
                 return;

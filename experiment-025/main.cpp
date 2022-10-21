@@ -108,7 +108,7 @@ class Game
 
             window.draw(*mSprites[mFrameIndex]);
             ++mCounter;
-            if (mCounter == 100)
+            if (mCounter == 20)
             {
                 mCounter = 0;
                 mFrameIndex = (mFrameIndex + 1);
@@ -154,7 +154,7 @@ class Game
 
             window.draw(*mSprites[mFrameIndex]);
             ++mCounter;
-            if (mCounter == 200)
+            if (mCounter == 30)
             {
                 mCounter = 0;
                 mFrameIndex = (mFrameIndex + 1);
@@ -253,9 +253,14 @@ class Game
                 {
                     if (p)
                     {
-                        if (rect.intersects(p->getRect()))
+                        auto pB = dynamic_cast<Bomb *>(p.get());
+                        auto pE = dynamic_cast<Explosion *>(p.get());
+                        if (pB == nullptr && pE == nullptr)
                         {
-                            canMove = false;
+                            if (rect.intersects(p->getRect()))
+                            {
+                                canMove = false;
+                            }
                         }
                     }
                 }
